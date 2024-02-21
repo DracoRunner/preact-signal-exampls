@@ -1,0 +1,11 @@
+.item {
+    border: 2px solid #000;
+    padding: 1em;
+    margin: 1em;
+    color: white;
+    background: black;
+}
+
+.item.active {
+    background: red;
+}
