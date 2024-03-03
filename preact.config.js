@@ -1,19 +1,15 @@
-import webpack from 'webpack';
 import path from 'path';
 import TsconfigPathsWebpackPlugin from 'tsconfig-paths-webpack-plugin';
+const webpack = require('webpack'); // eslint-disable-line
 
-export default (config) => {
-	config.plugins.unshift(
-      new webpack.DefinePlugin({
-        __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
-        'process.env.APP_ENV': JSON.stringify(process.env.APP_ENV || ''),
-		'process.env.DEVICE_WIDTH': JSON.stringify(process.env.DEVICE_WIDTH || ''),
-		'process.env.DEVICE_HEIGHT': JSON.stringify(process.env.DEVICE_HEIGHT || ''),
-        'process.env.MOUSE_ENABLED': JSON.stringify(process.env.MOUSE_ENABLED || '',
-        ),
-      }),
-    );
 
+export default {
+  plugins: [
+    ['@nimble/ctv-build-firebolt'],
+  ],
+
+  webpack(config, env, helpers) {
+    
 	config.output = {
 		...config.output,
 		path: path.join(__dirname, 'build'),
@@ -32,7 +28,7 @@ export default (config) => {
 		},
 		compress: true,
 		port: 9000,
-		hot:false,
+		hot: false,
 		client: {
 			overlay: {
 				errors: true,
@@ -41,5 +37,5 @@ export default (config) => {
 			},
 		},
 	}
-
+  },
 };

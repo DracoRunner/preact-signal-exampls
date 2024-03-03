@@ -4,8 +4,11 @@ import Home from './routes/home';
 import Profile from './routes/profile';
 import './style/index.css';
 import AppProvider from '@store/AppProvider';
+import { useEffect } from 'react';
+import { init } from '@nimble/virtual-key';
 
 export default function App() {
+
 	return (
 		<AppProvider>
 			<div id="app">
