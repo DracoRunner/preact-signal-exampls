@@ -22,13 +22,28 @@ export default function Home() {
 
 	return (
 		<div className="flex-container">
-			<Nav.Vertical id="root">
+			<Nav.Vertical id="root" onFocusWithinChange={(event: any) => console.log(event)}>
 				{Object.keys(data).map((key) => (
-					<div className="flex-row">
-						<Nav.Horizontal id={key}>
+					<div className="flex-row" key={key}>
+						<Nav.Horizontal id={key + 2} onFocusWithinChange={(event: any) => console.log(event)}>
 							{data[key].map((item, index) => (
-								<div class="flex-col">
-									<Nav.Focusable id={item}>
+								<div className="flex-col" key={item}>
+									<Nav.Focusable id={item + 2}>
+										<div className="box">{item + index}</div>
+									</Nav.Focusable>
+								</div>
+							))}
+						</Nav.Horizontal>
+					</div>
+				))}
+			</Nav.Vertical>
+			<Nav.Vertical id="root1" onFocusWithinChange={(event: any) => console.log(event)}>
+				{Object.keys(data).map((key) => (
+					<div className="flex-row" key={key}>
+						<Nav.Horizontal id={key} onFocusWithinChange={(event: any) => console.log(event)}>
+							{data[key].map((item, index) => (
+								<div className="flex-col" key={item + index}>
+									<Nav.Focusable id={item + 2}>
 										<div className="box">{item + index}</div>
 									</Nav.Focusable>
 								</div>
