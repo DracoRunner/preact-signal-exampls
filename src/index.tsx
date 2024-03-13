@@ -4,19 +4,18 @@ import AppProvider from '@store/AppProvider';
 import Home from './routes/home';
 import Profile from './routes/profile';
 import './style/index.css';
+import VGrid from './routes/VGrid';
 
 export default function App() {
-
-	return (
-		<AppProvider>
-			<div id="app">
-				<Router>
-					<Route path="/" component={Home} />
-					<Route path="/profile/" component={Profile} user="me" />
-					<Route path="/profile/:user" component={Profile} />
-				</Router>
-			</div>
-		</AppProvider>
-
-	);
+  return (
+    <AppProvider>
+      <div id="app">
+        <Router>
+          <Route path="/" component={Home} />
+          <Route path="/profile/" component={Profile} />
+          <Route path="/vgrid/" component={VGrid} />
+        </Router>
+      </div>
+    </AppProvider>
+  );
 }

@@ -1,0 +1,25 @@
+.parent {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: block;
+    overflow: hidden;
+}
+
+.row {
+    position: absolute;
+}
+
+.col {
+    position: absolute;
+    width: 200px;
+    height: 300px;
+    background-color: black;
+    color: white;
+    display: flex;
+    justify-content: center;
+    border: white 1px solid;
+    align-items: center;
+    font-size: 4rem;
+    font-weight: 900;
+}
