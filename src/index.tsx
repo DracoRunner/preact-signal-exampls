@@ -1,18 +1,18 @@
 import { Route, Router } from 'preact-router';
 
 import AppProvider from '@store/AppProvider';
-import Home from './routes/home';
-import Profile from './routes/profile';
-import './style/index.css';
 import VGrid from './routes/VGrid';
+import Home from './routes/home/home';
+import Users from './routes/users';
+import './style/index.css';
 
 export default function App() {
   return (
     <AppProvider>
       <div id="app">
         <Router>
-          <Route path="/" component={Home} />
-          <Route path="/profile/" component={Profile} />
+          {/* <Route path="/" component={Home} /> */}
+          <Route path="/users/" component={Users} />
           <Route path="/vgrid/" component={VGrid} />
         </Router>
       </div>
