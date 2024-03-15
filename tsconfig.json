@@ -1,25 +1,26 @@
 {
-	"compilerOptions": {
-		"target": "ESNext",
-		"module": "ESNext",
-		"moduleResolution": "Node",
-		"esModuleInterop": true,
-		"jsx": "preserve",
-		"jsxFactory": "preact.h",
-		"jsxFragmentFactory": "preact.Fragment",
-		"noEmit": true,
-		"allowJs": true,
-		"checkJs": true,
-		"skipLibCheck": true,
-		"baseUrl": "./",
-		"paths": {
-			"@store/*": ["src/store/*"],
-			"@hooks/*": ["src/hooks/*"],
-			"@hoc/*": ["src/HOC/*"],
-			"@controlComponents/*": ["src/ControlFlowComponent/*"],
-			"react": ["./node_modules/preact/compat"],
-			"react-dom": ["./node_modules/preact/compat"]
-		}
-	},
-	"include": ["node_modules/preact-cli/types.d.ts", "src/**/*"]
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "jsx": "preserve",
+    "jsxFactory": "preact.h",
+    "jsxFragmentFactory": "preact.Fragment",
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "skipLibCheck": true,
+    "baseUrl": "./",
+    "paths": {
+      "@store/*": ["src/store/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@hoc/*": ["src/HOC/*"],
+      "@utils/*": ["src/utils/*"],
+      "@controlComponents/*": ["src/ControlFlowComponent/*"],
+      "react": ["./node_modules/preact/compat"],
+      "react-dom": ["./node_modules/preact/compat"]
+    }
+  },
+  "include": ["node_modules/preact-cli/types.d.ts", "src/**/*"]
 }
