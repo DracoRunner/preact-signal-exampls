@@ -4,8 +4,9 @@ import { ForwardedRef } from 'preact/compat';
 import { MutableRef } from 'preact/hooks';
 export class Lane {
   public laneRef: HTMLDivElement;
-  laneConfig: any;
-  laneYPosition: number;
+  public laneConfig: any;
+  public laneYPosition: number;
+
   constructor(item: any) {
     const { modal, laneYPosition } = item;
     this.laneConfig = VGridConfig[modal];
@@ -42,6 +43,7 @@ class Navigation {
   public gridRef: HTMLDivElement;
   selectedLaneIndex: number = 0;
   public lanes: Lane[] = [];
+  private scrollBoundaries = 2;
 
   constructor() {
     window.addEventListener('keydown', this.handleKeyDown);
@@ -54,16 +56,23 @@ class Navigation {
 
   private handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'ArrowUp') {
-      if (this.selectedLaneIndex > 0) {
-        const selectedLane = this.lanes[this.selectedLaneIndex];
-        this.updateGridStyle(selectedLane.laneYPosition);
-        this.selectedLaneIndex--;
-      }
+      const lastLaneIndex = this.selectedLaneIndex;
+      this.selectedLaneIndex = lastLaneIndex > 0 ? lastLaneIndex - 1 : 0;
+      const selectedLane = this.lanes[this.selectedLaneIndex];
+      this.updateGridStyle(selectedLane.laneYPosition);
+      const lastFocusLane = this.lanes[lastLaneIndex];
+      selectedLane.laneRef.focus();
+      lastFocusLane.laneRef.blur();
     } else if (event.key === 'ArrowDown') {
-      if (this.selectedLaneIndex + 1 > 0 && this.selectedLaneIndex < this.lanes.length) {
+      const laneCount = this.lanes.length - 1;
+      if (laneCount - this.selectedLaneIndex > this.scrollBoundaries) {
+        const lastLaneIndex = this.selectedLaneIndex;
+        this.selectedLaneIndex = lastLaneIndex < laneCount ? lastLaneIndex + 1 : laneCount;
         const selectedLane = this.lanes[this.selectedLaneIndex];
+        const lastFocusLane = this.lanes[lastLaneIndex];
         this.updateGridStyle(selectedLane.laneYPosition);
-        this.selectedLaneIndex++;
+        selectedLane.laneRef.focus();
+        lastFocusLane.laneRef.blur();
       }
     }
   };
