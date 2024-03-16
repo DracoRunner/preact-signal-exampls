@@ -3,8 +3,6 @@ import TsconfigPathsWebpackPlugin from 'tsconfig-paths-webpack-plugin';
 const webpack = require('webpack'); // eslint-disable-line
 
 export default {
-  plugins: [['@nimble/ctv-build-firebolt']],
-
   webpack(config, env, helpers) {
     config.output = {
       ...config.output,
