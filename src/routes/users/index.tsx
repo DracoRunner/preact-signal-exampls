@@ -6,8 +6,6 @@ import { useSignal } from '@preact/signals';
 import Show from '@controlComponents/Show';
 
 export default () => {
-  console.log('Profile mounted===>');
-
   const formVisible = useSignal(false);
 
   const appState = useAppStore();

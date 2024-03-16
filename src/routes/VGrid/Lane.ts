@@ -79,13 +79,11 @@ class Lane {
   }
 
   public onFocus() {
-    console.log('onFocus', this.laneConfig, this.currentIndex.value);
     this.currentIndex.value = Math.max(this.currentIndex.value, this.lastFocusedIndex);
     this.lastIndex.value = -1;
   }
 
   public onblur() {
-    console.log('onblur', this.laneConfig);
     this.lastIndex.value = this.currentIndex.value;
     this.currentIndex.value = -1;
   }

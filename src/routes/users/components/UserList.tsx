@@ -5,19 +5,13 @@ import './styles.css';
 import { useAppDispatch } from '@store/AppProvider';
 
 export default ({ users }: { users: Signal<User[]> }) => {
-  console.log('UserList  mounted===>');
-
   const dispatch = useAppDispatch();
 
   const handleDelete = (id: number) => {
-    console.log('delete user===>', id);
-
     dispatch({ type: 'delete_user', data: id });
   };
 
   const handleEdit = (user: User) => {
-    console.log('edit user===>', user);
-
     dispatch({ type: 'edit_user', data: user });
   };
 

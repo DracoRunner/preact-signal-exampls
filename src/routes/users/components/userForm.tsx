@@ -6,8 +6,6 @@ type props = {
 };
 
 export default ({ handleFormVisible }: props) => {
-  console.log('UserForm mounted===>');
-
   const dispatch = useAppDispatch();
 
   const handleSubmit = (event: Event) => {
