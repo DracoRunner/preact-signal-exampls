@@ -1,28 +1,21 @@
 import { useLayoutEffect, useRef } from 'preact/hooks';
 import styles from './style.module.css';
-import Navigation, { Lane } from './Navigation';
 import data from './data';
-
-const createLane = (item: any) => {
-  const lane = new Lane(item);
-  return lane;
-};
+import Lane from './Lane';
+import Grid from './Grid';
 
 export default () => {
   const gridRef = useRef(null);
+  const vGrid = new Grid();
 
   const renderLane = () => {
     if (gridRef.current) {
-      Navigation.gridRef = gridRef.current;
-      let laneYPosition = 0;
-      data.forEach((item: any, index: number) => {
-        const lane = createLane({ ...item, laneYPosition });
-        gridRef.current.appendChild(lane.getLane());
-        laneYPosition = lane.getNextLanePosition();
-        Navigation.lanes.push(lane);
-      });
+      vGrid.gridRef = gridRef.current;
+      vGrid.setLaneData(data);
+      vGrid.renderLane();
     }
   };
+
   useLayoutEffect(() => {
     renderLane();
   }, []);
