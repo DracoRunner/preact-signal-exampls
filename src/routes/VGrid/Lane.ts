@@ -1,14 +1,15 @@
+import { Signal, signal } from '@preact/signals';
 import Item from './Item';
 import { LaneConfig, VGridConfig } from './config';
 
 class Lane {
-  laneRef: HTMLDivElement;
+  private items: any[];
+  private laneRef: HTMLDivElement;
   laneYPosition: number;
   laneConfig: LaneConfig;
-  selectedItemIndex: number = 0;
-  items: any[];
+  currentIndex = signal<number>(-1);
+  lastIndex = signal<number>(-1);
   itemRefs: Item[] = [];
-  isFocused: boolean;
 
   constructor(laneItem: any, laneYPosition: number) {
     const { modal, items } = laneItem;
@@ -17,14 +18,7 @@ class Lane {
     this.laneConfig = laneConfig;
     this.laneYPosition = laneYPosition;
     this.createLane();
-  }
-
-  private keyEventListener(event: KeyboardEvent) {
-    if (event.key === 'ArrowRight') {
-      this.selectedItemIndex = this.selectedItemIndex + 1;
-    } else if (event.key === 'ArrowLeft') {
-      this.selectedItemIndex = this.selectedItemIndex - 1;
-    }
+    this.handleNavigation();
   }
 
   private createLane() {
@@ -34,7 +28,6 @@ class Lane {
     lane.style.width = `100%`;
     lane.style.transform = `translate(0px, ${this.laneYPosition}px)`;
     lane.style.transition = 'transform 400ms ease 0ms';
-    lane.addEventListener('keydown', this.keyEventListener);
     this.laneRef = lane;
     this.createItems();
   }
@@ -49,41 +42,56 @@ class Lane {
     });
   }
 
-  getLane() {
-    return this.laneRef;
+  private handleNavigation() {
+    this.currentIndex.subscribe((selectedIndex) => {
+      if (selectedIndex >= 0) {
+        const item = this.itemRefs[selectedIndex];
+        if (this.itemRefs.length - selectedIndex >= this.laneConfig.scrollBoundary) {
+          this.laneRef.style.transform = `translate(-${item.iteXPosition}px, ${this.laneYPosition}px)`;
+        }
+        item.onFocus();
+      }
+    });
+    this.lastIndex.subscribe((prevIndex) => {
+      if (prevIndex >= 0) this.itemRefs[prevIndex].onblur();
+    });
   }
 
-  onFocus() {
-    this.isFocused = true;
-    console.log('onFocus', this.laneConfig);
-  }
-
-  onblur() {
-    console.log('onblur', this.laneConfig);
-  }
-
-  handleKeyDown(event: KeyboardEvent) {
+  public handleKeyDown(event: KeyboardEvent) {
+    const currentSelectedIndex = this.currentIndex.value;
     if (event.key === 'ArrowRight') {
-      if (this.selectedItemIndex >= this.items.length - this.laneConfig.scrollBoundary) return;
-      const lastIndex = this.selectedItemIndex;
-      this.selectedItemIndex = this.selectedItemIndex + 1;
-      const item = this.itemRefs[this.selectedItemIndex];
-      this.laneRef.style.transform = `translate(-${item.iteXPosition}px, ${this.laneYPosition}px)`;
-      this.itemRefs[this.selectedItemIndex].onFocus();
-      this.itemRefs[lastIndex].onblur();
+      if (currentSelectedIndex < this.itemRefs.length - 1) {
+        const lastIndex = currentSelectedIndex;
+        const nextIndex = currentSelectedIndex + 1;
+        this.currentIndex.value = nextIndex;
+        this.lastIndex.value = lastIndex;
+      }
     } else if (event.key === 'ArrowLeft') {
-      if (this.selectedItemIndex <= 0) return;
-      const lastIndex = this.selectedItemIndex;
-      this.selectedItemIndex = this.selectedItemIndex - 1;
-      const item = this.itemRefs[this.selectedItemIndex];
-      this.laneRef.style.transform = `translate(-${item.iteXPosition}px, ${this.laneYPosition}px)`;
-      this.itemRefs[this.selectedItemIndex].onFocus();
-      this.itemRefs[lastIndex].onblur();
+      if (currentSelectedIndex >= 0) {
+        const lastIndex = currentSelectedIndex;
+        const nextIndex = currentSelectedIndex - 1;
+        this.currentIndex.value = nextIndex;
+        this.lastIndex.value = lastIndex;
+      }
     }
   }
 
-  getNextLaneYPos() {
+  public onFocus() {
+    console.log('onFocus', this.laneConfig, this.currentIndex.value);
+    this.currentIndex.value = Math.max(this.currentIndex.value, 0);
+  }
+
+  public onblur() {
+    console.log('onblur', this.laneConfig);
+    this.lastIndex.value = Math.max(this.lastIndex.value, 0);
+  }
+
+  public getNextLaneYPos() {
     return this.laneYPosition + this.laneConfig.height + 10;
+  }
+
+  public getLane() {
+    return this.laneRef;
   }
 }
 

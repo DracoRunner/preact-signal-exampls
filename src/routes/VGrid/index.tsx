@@ -13,6 +13,7 @@ export default () => {
       vGrid.gridRef = gridRef.current;
       vGrid.setLaneData(data);
       vGrid.renderLane();
+      vGrid.onFocus();
     }
   };
 

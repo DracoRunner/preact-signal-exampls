@@ -1,69 +1,73 @@
-import { Ref } from 'preact';
-import { VGridConfig } from './config';
-import { ForwardedRef } from 'preact/compat';
-import { MutableRef } from 'preact/hooks';
+import { signal } from '@preact/signals';
 import Lane from './Lane';
 
 class Grid {
-  private laneData: any[] = [];
+  private lane: any[] = [];
   gridRef: HTMLDivElement;
-  selectedLaneIndex: number = 0;
-  lanes: Lane[] = [];
-  scrollBoundaries = 2;
+  currentIndex = signal<number>(-1);
+  lastIndex = signal<number>(-1);
+  laneRef: Lane[] = [];
+  gridScrollBoundary = 3;
 
-  constructor() {}
+  constructor() {
+    this.handleNavigation();
+  }
+
+  private handleNavigation() {
+    this.currentIndex.subscribe((selectedIndex) => {
+      if (selectedIndex >= 0) {
+        const lane = this.laneRef[selectedIndex];
+        if (this.laneRef.length - selectedIndex >= this.gridScrollBoundary) {
+          this.gridRef.style.transition = 'transform 400ms ease 0ms';
+          this.gridRef.style.transform = `translate3d(0px, -${lane.laneYPosition}px, 0px)`;
+        }
+        lane.onFocus();
+      }
+    });
+    this.lastIndex.subscribe((prevIndex) => {
+      if (prevIndex >= 0) this.laneRef[prevIndex].onblur();
+    });
+  }
 
   setLaneData = (laneData: any) => {
-    this.laneData = laneData;
+    this.lane = laneData;
     window.addEventListener('keydown', this.handleKeyDown);
   };
 
   renderLane = () => {
     let laneYPosition = 0;
-    this.laneData.forEach((item: any) => {
+    this.lane.forEach((item: any) => {
       const lane = new Lane(item, laneYPosition);
       this.gridRef.appendChild(lane.getLane());
       laneYPosition = lane.getNextLaneYPos();
-      this.lanes.push(lane);
+      this.laneRef.push(lane);
     });
-    const selectedLane = this.lanes[this.selectedLaneIndex];
-    selectedLane.onFocus();
-  };
-
-  private updateGridStyle = (y: number) => {
-    this.gridRef.style.transform = `translate3d(0px, -${y}px, 0px)`;
-    this.gridRef.style.transition = 'transform 400ms ease 0ms';
   };
 
   private handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'ArrowUp') {
-      const lastIndex = this.selectedLaneIndex;
-      const nextIndex = Math.max(lastIndex - 1, 0);
-      if (nextIndex < 0) return;
-      this.selectedLaneIndex = nextIndex;
-      const selectedLane = this.lanes[this.selectedLaneIndex];
-      this.updateGridStyle(selectedLane.laneYPosition);
-      const lastFocusLane = this.lanes[lastIndex];
-      selectedLane.onFocus();
-      lastFocusLane.onblur();
-    } else if (event.key === 'ArrowDown') {
-      const laneCount = this.lanes.length - 1;
-      if (laneCount - this.selectedLaneIndex > this.scrollBoundaries) {
-        const lastLaneIndex = this.selectedLaneIndex;
-        this.selectedLaneIndex = Math.min(lastLaneIndex + 1, laneCount);
-        const selectedLane = this.lanes[this.selectedLaneIndex];
-        const lastFocusLane = this.lanes[lastLaneIndex];
-        this.updateGridStyle(selectedLane.laneYPosition);
-        selectedLane.onFocus();
-        lastFocusLane.onblur();
+    const currentSelectedIndex = this.currentIndex.value;
+    if (event.key === 'ArrowDown') {
+      if (currentSelectedIndex < this.laneRef.length - 1) {
+        const lastIndex = currentSelectedIndex;
+        const nextIndex = currentSelectedIndex + 1;
+        this.currentIndex.value = nextIndex;
+        this.lastIndex.value = lastIndex;
       }
-    } else if (event.key === 'ArrowRight') {
-      const selectedLane = this.lanes[this.selectedLaneIndex];
-      selectedLane.handleKeyDown(event);
-    } else if (event.key === 'ArrowLeft') {
-      const selectedLane = this.lanes[this.selectedLaneIndex];
+    } else if (event.key === 'ArrowUp') {
+      if (currentSelectedIndex >= 0) {
+        const lastIndex = currentSelectedIndex;
+        const nextIndex = currentSelectedIndex - 1;
+        this.currentIndex.value = nextIndex;
+        this.lastIndex.value = lastIndex;
+      }
+    } else if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+      const selectedLane = this.laneRef[this.currentIndex.value];
       selectedLane.handleKeyDown(event);
     }
+  };
+
+  onFocus = () => {
+    this.currentIndex.value = Math.max(this.currentIndex.value, 0);
   };
 }
 

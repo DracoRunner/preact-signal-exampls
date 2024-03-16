@@ -31,10 +31,12 @@ class Item {
 
   onFocus() {
     console.log('onFocus', this.item.title);
+    this.itemRef.style.background = 'pink';
   }
 
   onblur() {
     console.log('onblur', this.item.title);
+    this.itemRef.style.background = this.config.color;
   }
 
   getNextItemXPos() {
