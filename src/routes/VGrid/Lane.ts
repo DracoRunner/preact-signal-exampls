@@ -10,6 +10,7 @@ class Lane {
   currentIndex = signal<number>(-1);
   lastIndex = signal<number>(-1);
   itemRefs: Item[] = [];
+  lastFocusedIndex = 0;
 
   constructor(laneItem: any, laneYPosition: number) {
     const { modal, items } = laneItem;
@@ -49,6 +50,7 @@ class Lane {
         if (this.itemRefs.length - selectedIndex >= this.laneConfig.scrollBoundary) {
           this.laneRef.style.transform = `translate(-${item.iteXPosition}px, ${this.laneYPosition}px)`;
         }
+        this.lastFocusedIndex = selectedIndex;
         item.onFocus();
       }
     });
@@ -78,12 +80,14 @@ class Lane {
 
   public onFocus() {
     console.log('onFocus', this.laneConfig, this.currentIndex.value);
-    this.currentIndex.value = Math.max(this.currentIndex.value, 0);
+    this.currentIndex.value = Math.max(this.currentIndex.value, this.lastFocusedIndex);
+    this.lastIndex.value = -1;
   }
 
   public onblur() {
     console.log('onblur', this.laneConfig);
-    this.lastIndex.value = Math.max(this.lastIndex.value, 0);
+    this.lastIndex.value = this.currentIndex.value;
+    this.currentIndex.value = -1;
   }
 
   public getNextLaneYPos() {
