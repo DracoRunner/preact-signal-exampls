@@ -1,4 +1,3 @@
-import Lane from './Lane';
 import { LaneConfig } from './config';
 
 class Item {

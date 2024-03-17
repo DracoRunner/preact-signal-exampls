@@ -1,0 +1,13 @@
+.grid-container {
+    height: 100%;
+    width: 100%;
+    position: relative;
+    background: gray;
+    transition: 400ms ease 0ms;
+
+    .grid-row {
+        position: absolute;
+        transition: 400ms ease 0ms;
+        width: 100%;
+    }
+}

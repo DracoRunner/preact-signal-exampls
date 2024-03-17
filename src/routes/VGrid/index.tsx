@@ -1,18 +1,14 @@
 import { useLayoutEffect, useRef } from 'preact/hooks';
-import styles from './style.module.css';
-import data from './data';
-import Lane from './Lane';
 import Grid from './Grid';
+import data from './data';
+import './style.css';
 
 export default () => {
   const gridRef = useRef(null);
-  const vGrid = new Grid();
 
   const renderLane = () => {
     if (gridRef.current) {
-      vGrid.gridRef = gridRef.current;
-      vGrid.setLaneData(data);
-      vGrid.renderLane();
+      const vGrid = new Grid(gridRef.current, data);
       vGrid.onFocus();
     }
   };
@@ -21,5 +17,5 @@ export default () => {
     renderLane();
   }, []);
 
-  return <div ref={gridRef} className={styles.gridContainer}></div>;
+  return <div ref={gridRef} className="grid-container"></div>;
 };
