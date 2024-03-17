@@ -1,87 +1,58 @@
-import Base from './BaseGrid';
+import { createRef, hydrate } from 'preact';
+import Carousel from './components/Carousel';
+import { getLaneConfig } from './utils';
+import { getProductByCategory } from './services';
 import Item from './Item';
-import { LaneConfig, VGridConfig } from './config';
+import { Config } from './config';
 
-class Lane extends Base {
-  laneYPosition: number;
-  config: LaneConfig;
-  lastFocusedIndex = 0;
+class Lane {
+  laneItem: any;
+  container = document.createElement('div');
+  laneRef = createRef<HTMLElement>();
+  laneData: any[] = [];
+  totalItems = 0;
+  config: Config;
+  yPos = 0;
+  xPos = 0;
+  items: Item[] = [];
 
-  constructor(laneItem: any, laneYPosition: number) {
-    const { modal, items } = laneItem;
-    const config = VGridConfig[modal];
-    const lane = document.createElement('div');
-    super(lane, config.scrollBoundary, items);
-    this.config = config;
-    this.laneYPosition = laneYPosition;
-    this.createLane();
-    this.handleNavigation();
+  constructor(laneItem: any, yPos = 0) {
+    this.laneItem = laneItem;
+    this.yPos = yPos;
+    this.config = getLaneConfig(this.laneItem.type);
+    this.renderLane();
   }
 
-  private createLane() {
-    this.container.classList.add('grid-row');
-    this.container.style.height = `${this.config.height}px`;
-    this.container.style.transform = `translate(0px, ${this.laneYPosition}px)`;
-    this.createItems();
-  }
+  renderLane = async () => {
+    this.container.className = 'grid-row';
+    this.container.style.height = `${this.config.laneHeight}px`;
+    this.container.style.transform = `translate(0px, ${this.yPos}px)`;
+    hydrate(Carousel({ ...this.laneItem, laneRef: this.laneRef }), this.container);
+    this.fetchLaneItems();
+  };
 
-  private createItems() {
-    let itemXPosition = 0;
-    this.items.forEach((_: any, index) => {
-      const item = new Item(_, itemXPosition, this.config);
-      this.container.appendChild(item.getItem());
-      itemXPosition = item.getNextItemXPos();
-      this.itemRefs.push(item);
+  fetchLaneItems = async () => {
+    getProductByCategory(this.laneItem.title).then((res: any) => {
+      this.laneData = res.products;
+      this.totalItems = res.total;
+      this.renderItems();
     });
-  }
+  };
 
-  private handleNavigation() {
-    this.currentIndex.subscribe((selectedIndex) => {
-      if (selectedIndex >= 0) {
-        const item = this.itemRefs[selectedIndex];
-        if (this.itemRefs.length - selectedIndex >= this.config.scrollBoundary) {
-          this.container.style.transform = `translate(-${item.iteXPosition}px, ${this.laneYPosition}px)`;
-        }
-        this.lastFocusedIndex = selectedIndex;
-        item.onFocus();
-      }
-    });
-    this.lastIndex.subscribe((prevIndex) => {
-      if (prevIndex >= 0) this.itemRefs[prevIndex].onblur();
-    });
-  }
-
-  public handleKeyDown(event: KeyboardEvent) {
-    const currentSelectedIndex = this.currentIndex.value;
-    if (event.key === 'ArrowRight') {
-      if (currentSelectedIndex < this.itemRefs.length - 1) {
-        const lastIndex = currentSelectedIndex;
-        const nextIndex = currentSelectedIndex + 1;
-        this.currentIndex.value = nextIndex;
-        this.lastIndex.value = lastIndex;
-      }
-    } else if (event.key === 'ArrowLeft') {
-      if (currentSelectedIndex >= 0) {
-        const lastIndex = currentSelectedIndex;
-        const nextIndex = currentSelectedIndex - 1;
-        this.currentIndex.value = nextIndex;
-        this.lastIndex.value = lastIndex;
-      }
+  renderItems = async () => {
+    if (this.laneRef.current) {
+      this.laneData?.forEach((item: any, index: number) => {
+        const laneItem = new Item(item, index, this.laneItem.type);
+        this.laneRef.current.appendChild(laneItem.container);
+        this.items.push(laneItem);
+      });
+    } else {
+      throw new Error('Lane reference is not available');
     }
-  }
+  };
 
-  public onFocus() {
-    this.currentIndex.value = Math.max(this.currentIndex.value, this.lastFocusedIndex);
-    this.lastIndex.value = -1;
-  }
-
-  public onBlur() {
-    this.lastIndex.value = this.currentIndex.value;
-    this.currentIndex.value = -1;
-  }
-
-  getNextItemYPos() {
-    return this.laneYPosition + this.config.height + 10;
+  nextItemPos() {
+    return this.yPos + this.config.laneHeight + this.config.spaceBetweenLane;
   }
 }
 

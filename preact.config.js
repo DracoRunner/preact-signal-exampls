@@ -20,6 +20,18 @@ export default {
       static: {
         directory: path.join(__dirname, 'src'),
       },
+      proxy: {
+        '/api': {
+          changeOrigin: true,
+          cookieDomainRewrite: {
+            '*': '',
+          },
+          cookiePathRewrite: false,
+          pathRewrite: { '^/api': '' },
+          secure: false,
+          target: 'https://dummyjson.com/',
+        },
+      },
       compress: true,
       port: 9000,
       hot: false,

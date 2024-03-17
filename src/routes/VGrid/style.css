@@ -4,10 +4,16 @@
     position: relative;
     background: gray;
     transition: 400ms ease 0ms;
+    color: white;
+}
 
-    .grid-row {
-        position: absolute;
-        transition: 400ms ease 0ms;
-        width: 100%;
-    }
+.grid-row {
+    position: absolute;
+    transition: 400ms ease 0ms;
+    width: 100%;
+}
+
+.grid-col {
+    position: absolute;
+    transition: 400ms ease 0ms;
 }

@@ -1,43 +1,39 @@
-import { LaneConfig } from './config';
+import { hydrate } from 'preact';
+import { Config } from './config';
+import { getLaneConfig } from './utils';
+import MovieCard from './components/MovieCard';
 
 class Item {
-  item: any;
-  itemRef: HTMLSpanElement;
-  iteXPosition: number;
-  config: LaneConfig;
+  itemData: any;
+  container = document.createElement('span');
+  xPos: number;
+  config: Config;
 
-  constructor(item: any, itemXPosition: number, config: LaneConfig) {
-    this.item = item;
-    this.iteXPosition = itemXPosition;
-    this.config = config;
+  constructor(itemData: any, index: number, type: string) {
+    this.itemData = itemData;
+    this.config = getLaneConfig(type);
+    this.setItemXPos(index);
     this.createItem();
   }
 
-  createItem = () => {
-    const item = document.createElement('span');
-    item.style.position = 'absolute';
-    item.style.height = `${this.config.height}px`;
-    item.style.width = `${this.config.width}px`;
-    item.style.transform = `translate(${this.iteXPosition}px,0px)`;
-    item.style.background = this.config.color;
-    item.innerText = this.item.title;
-    this.itemRef = item;
+  createItem = async () => {
+    this.container.classList.add('grid-col');
+    this.container.style.height = `${this.config.ItemHeight}px`;
+    this.container.style.width = `${this.config.width}px`;
+    this.container.style.transform = `translate(${this.xPos}px,0px)`;
+    hydrate(MovieCard(this.itemData), this.container);
   };
 
-  getItem() {
-    return this.itemRef;
-  }
-
   onFocus() {
-    this.itemRef.style.background = 'pink';
+    this.container.style.background = 'pink';
   }
 
   onblur() {
-    this.itemRef.style.background = this.config.color;
+    this.container.style.background = this.config.color;
   }
 
-  getNextItemXPos() {
-    return this.iteXPosition + this.config.width + 10;
+  setItemXPos(index) {
+    this.xPos = index * this.config.width + index * 20;
   }
 }
 

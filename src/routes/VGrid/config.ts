@@ -1,30 +1,34 @@
 import { getScaledPx } from '@utils/index';
 
-export type LaneConfig = {
-  height: number;
+export type Config = {
+  laneHeight: number;
+  ItemHeight: number;
   color: string;
   width: number;
   scrollBoundary: number;
   spaceBetweenLane: number;
 };
 
-export const VGridConfig: { [key: string]: LaneConfig } = {
+export const VGridConfig: { [key: string]: Config } = {
   movie: {
-    height: getScaledPx(300, true),
+    laneHeight: getScaledPx(300, true),
+    ItemHeight: getScaledPx(300, true),
     width: getScaledPx(200),
     color: 'red',
     scrollBoundary: 9,
     spaceBetweenLane: getScaledPx(10, true),
   },
   show: {
-    height: getScaledPx(400, true),
+    laneHeight: getScaledPx(400, true),
+    ItemHeight: getScaledPx(300, true),
     width: getScaledPx(250),
     scrollBoundary: 7,
     color: 'yellow',
     spaceBetweenLane: getScaledPx(10, true),
   },
   spotlight: {
-    height: getScaledPx(250, true),
+    laneHeight: getScaledPx(250, true),
+    ItemHeight: getScaledPx(300, true),
     width: getScaledPx(250),
     color: 'blue',
     scrollBoundary: 7,
