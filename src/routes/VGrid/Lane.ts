@@ -15,6 +15,8 @@ class Lane {
   yPos = 0;
   xPos = 0;
   items: Item[] = [];
+  currentItemIndex = 0;
+  lastItemIndex = 0;
 
   constructor(laneItem: any, yPos = 0) {
     this.laneItem = laneItem;
@@ -53,6 +55,57 @@ class Lane {
 
   nextItemPos() {
     return this.yPos + this.config.laneHeight + this.config.spaceBetweenLane;
+  }
+
+  onFocus() {
+    const focusedItem = this.items[this.currentItemIndex];
+    focusedItem?.onFocus();
+  }
+
+  onBlur() {
+    const blurredItem = this.items[this.currentItemIndex];
+    blurredItem?.onBlur();
+  }
+
+  handleKeyDown = (e: KeyboardEvent) => {
+    switch (e.key) {
+      case 'ArrowRight':
+        this.moveRight();
+        break;
+      case 'ArrowLeft':
+        this.moveLeft();
+        break;
+      default:
+        break;
+    }
+  };
+
+  moveRight() {
+    const currentIndex = this.currentItemIndex;
+    const nextIndex = currentIndex + 1;
+    if (nextIndex < this.items.length) {
+      this.currentItemIndex = nextIndex;
+      this.lastItemIndex = currentIndex;
+      const focusedItem = this.items[nextIndex];
+      const blurredItem = this.items[currentIndex];
+      this.laneRef.current.style.transform = `translate(-${focusedItem.xPos}px, 0px)`;
+      blurredItem.onBlur();
+      focusedItem.onFocus();
+    }
+  }
+
+  moveLeft() {
+    const currentIndex = this.currentItemIndex;
+    const nextIndex = currentIndex - 1;
+    if (nextIndex >= 0) {
+      this.currentItemIndex = nextIndex;
+      this.lastItemIndex = currentIndex;
+      const focusedItem = this.items[nextIndex];
+      const blurredItem = this.items[currentIndex];
+      this.laneRef.current.style.transform = `translate(-${focusedItem.xPos}px, 0px)`;
+      blurredItem.onBlur();
+      focusedItem.onFocus();
+    }
   }
 }
 

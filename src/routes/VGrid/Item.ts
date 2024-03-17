@@ -25,11 +25,11 @@ class Item {
   };
 
   onFocus() {
-    this.container.style.background = 'pink';
+    this.container.style.border = `2px solid blue`;
   }
 
-  onblur() {
-    this.container.style.background = this.config.color;
+  onBlur() {
+    this.container.style.border = `none`;
   }
 
   setItemXPos(index) {

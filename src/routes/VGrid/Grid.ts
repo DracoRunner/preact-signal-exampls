@@ -29,6 +29,7 @@ class Grid {
       laneYPos = lane.nextItemPos();
       this.lanes.push(lane);
     });
+    this.onFocus();
   };
 
   handleKeyDown = (e: KeyboardEvent) => {
@@ -38,6 +39,10 @@ class Grid {
         break;
       case 'ArrowUp':
         this.moveUp();
+        break;
+      case 'ArrowRight':
+      case 'ArrowLeft':
+        this.lanes[this.currentLaneIndex].handleKeyDown(e);
         break;
       default:
         break;
@@ -49,7 +54,11 @@ class Grid {
     if (nextIndex < this.lanes.length - this.scrollBoundary) {
       this.currentLaneIndex = nextIndex;
       this.lastLaneIndex = currentIndex;
-      this.container.style.transform = `translate(0px, -${this.lanes[nextIndex].yPos}px)`;
+      const focusedLane = this.lanes[nextIndex];
+      const blurredLane = this.lanes[currentIndex];
+      this.container.style.transform = `translate(0px, -${focusedLane.yPos}px)`;
+      blurredLane.onBlur();
+      focusedLane.onFocus();
     }
   }
   moveUp() {
@@ -58,8 +67,18 @@ class Grid {
     if (nextIndex >= 0) {
       this.currentLaneIndex = nextIndex;
       this.lastLaneIndex = currentIndex;
-      this.container.style.transform = `translate(0px, -${this.lanes[nextIndex].yPos}px)`;
+      const focusedLane = this.lanes[nextIndex];
+      const blurredLane = this.lanes[currentIndex];
+      this.container.style.transform = `translate(0px, -${focusedLane.yPos}px)`;
+      blurredLane.onBlur();
+      focusedLane.onFocus();
     }
+  }
+
+  onFocus() {
+    const lane = this.lanes[this.currentLaneIndex];
+    this.container.style.transform = `translate(0px, -${lane.yPos}px)`;
+    lane.onFocus();
   }
 }
 
