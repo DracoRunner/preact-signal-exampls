@@ -51,12 +51,13 @@ class Grid {
   moveDown() {
     const currentIndex = this.currentLaneIndex;
     const nextIndex = currentIndex + 1;
-    if (nextIndex < this.lanes.length - this.scrollBoundary) {
+    if (nextIndex < this.lanes.length) {
       this.currentLaneIndex = nextIndex;
       this.lastLaneIndex = currentIndex;
       const focusedLane = this.lanes[nextIndex];
       const blurredLane = this.lanes[currentIndex];
-      this.container.style.transform = `translate(0px, -${focusedLane.yPos}px)`;
+      if (nextIndex < this.lanes.length - this.scrollBoundary)
+        this.container.style.transform = `translate(0px, -${focusedLane.yPos}px)`;
       blurredLane.onBlur();
       focusedLane.onFocus();
     }

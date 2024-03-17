@@ -88,7 +88,8 @@ class Lane {
       this.lastItemIndex = currentIndex;
       const focusedItem = this.items[nextIndex];
       const blurredItem = this.items[currentIndex];
-      this.laneRef.current.style.transform = `translate(-${focusedItem.xPos}px, 0px)`;
+      if (nextIndex < this.items.length - this.config.scrollBoundary)
+        this.laneRef.current.style.transform = `translate(-${focusedItem.xPos}px, 0px)`;
       blurredItem.onBlur();
       focusedItem.onFocus();
     }
@@ -102,7 +103,8 @@ class Lane {
       this.lastItemIndex = currentIndex;
       const focusedItem = this.items[nextIndex];
       const blurredItem = this.items[currentIndex];
-      this.laneRef.current.style.transform = `translate(-${focusedItem.xPos}px, 0px)`;
+      if (nextIndex < this.items.length - this.config.scrollBoundary)
+        this.laneRef.current.style.transform = `translate(-${focusedItem.xPos}px, 0px)`;
       blurredItem.onBlur();
       focusedItem.onFocus();
     }

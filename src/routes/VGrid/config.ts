@@ -22,7 +22,7 @@ export const VGridConfig: { [key: string]: Config } = {
     laneHeight: getScaledPx(400, true),
     ItemHeight: getScaledPx(300, true),
     width: getScaledPx(250),
-    scrollBoundary: 7,
+    scrollBoundary: 5,
     color: 'yellow',
     spaceBetweenLane: getScaledPx(10, true),
   },
