@@ -1,14 +1,19 @@
 import { useLayoutEffect, useRef } from 'preact/hooks';
 import Grid from './Grid';
 import './style.css';
-import { getAllCategory } from './services';
+import { getCarousels } from './services';
 
 export default () => {
   const gridRef = useRef(null);
 
   useLayoutEffect(() => {
     if (gridRef.current) {
-      const vGrid = new Grid(gridRef.current, getAllCategory);
+      const vGrid = new Grid(gridRef.current, getCarousels);
+      window.addEventListener('keydown', vGrid.handleKeyDown);
+
+      return () => {
+        window.removeEventListener('keydown', vGrid.handleKeyDown);
+      };
     }
   }, []);
 

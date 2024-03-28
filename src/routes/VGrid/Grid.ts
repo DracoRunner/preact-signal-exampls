@@ -1,86 +1,85 @@
+import Pagination from './BaseClasses/Pagination';
 import Lane from './Lane';
+import { getLaneConfig } from './utils';
 
-class Grid {
-  scrollBoundary = 1;
+class Grid extends Pagination {
   items: any[];
-  lanes: Lane[] = [];
+  lanes: any[] = [];
   container: HTMLElement;
   currentLaneIndex = 0;
   lastLaneIndex = 0;
+  topYPos = 0;
+  bottomYPos = 0;
 
   constructor(gridRef: HTMLDivElement, fetchFn) {
+    super(fetchFn);
     this.container = gridRef;
-    this.generateLane(fetchFn);
-    window.addEventListener('keydown', this.handleKeyDown);
+    this.handleGridUpdate();
+    this.render();
   }
 
-  generateLane = async (fetchFn) => {
-    fetchFn().then((res) => {
-      this.items = res;
-      this.renderLane();
+  render = () => {
+    this.initDataToRender.subscribe((prev, items) => {
+      if (items.length) {
+        items.forEach((item, index) => {
+          const lane = new Lane(item, this.bottomYPos);
+          this.container.appendChild(lane.container);
+          this.bottomYPos = lane.nextItemPos();
+          this.lanes.push(lane);
+        });
+      }
     });
   };
 
-  renderLane = () => {
-    let laneYPos = 0;
-    this.items.forEach((item: any) => {
-      const lane = new Lane(item, laneYPos);
-      this.container.appendChild(lane.container);
-      laneYPos = lane.nextItemPos();
-      this.lanes.push(lane);
+  handleGridUpdate() {
+    this.laneStartIndex.subscribe((prev, next) => {
+      if (prev > next) {
+        const item = this.dataBuffer[next];
+        const lane = new Lane(this.dataBuffer[next], this.topYPos);
+        this.container.insertBefore(lane.container, this.container.firstChild);
+        this.topYPos = lane.prevItemPos(item);
+        this.lanes.unshift(lane);
+      }
+
+      if (next > prev) {
+        const topLaneToRemove = this.lanes[0];
+        this.container.removeChild(topLaneToRemove.container);
+        this.topYPos = topLaneToRemove.yPos;
+        console.log('topYPost===>', this.topYPos);
+        this.lanes.shift();
+      }
     });
-    this.onFocus();
-  };
+    this.laneEndIndex.subscribe((prev, next) => {
+      if (prev > next) {
+        const laneToRemove = this.lanes[this.lanes.length - 1];
+        this.container.removeChild(laneToRemove.container);
+        this.bottomYPos = laneToRemove.yPos;
+        this.lanes.pop();
+      }
+
+      if (next > prev) {
+        const lane = new Lane(this.dataBuffer[next], this.bottomYPos);
+        this.container.appendChild(lane.container);
+        this.bottomYPos = lane.nextItemPos();
+        this.lanes.push(lane);
+      }
+    });
+  }
 
   handleKeyDown = (e: KeyboardEvent) => {
     switch (e.key) {
-      case 'ArrowDown':
-        this.moveDown();
+      case 'ArrowDown': {
+        this.next();
         break;
-      case 'ArrowUp':
-        this.moveUp();
+      }
+      case 'ArrowUp': {
+        this.prev();
         break;
-      case 'ArrowRight':
-      case 'ArrowLeft':
-        this.lanes[this.currentLaneIndex].handleKeyDown(e);
-        break;
+      }
       default:
         break;
     }
   };
-  moveDown() {
-    const currentIndex = this.currentLaneIndex;
-    const nextIndex = currentIndex + 1;
-    if (nextIndex < this.lanes.length) {
-      this.currentLaneIndex = nextIndex;
-      this.lastLaneIndex = currentIndex;
-      const focusedLane = this.lanes[nextIndex];
-      const blurredLane = this.lanes[currentIndex];
-      if (nextIndex < this.lanes.length - this.scrollBoundary)
-        this.container.style.transform = `translate(0px, -${focusedLane.yPos}px)`;
-      blurredLane.onBlur();
-      focusedLane.onFocus();
-    }
-  }
-  moveUp() {
-    const currentIndex = this.currentLaneIndex;
-    const nextIndex = currentIndex - 1;
-    if (nextIndex >= 0) {
-      this.currentLaneIndex = nextIndex;
-      this.lastLaneIndex = currentIndex;
-      const focusedLane = this.lanes[nextIndex];
-      const blurredLane = this.lanes[currentIndex];
-      this.container.style.transform = `translate(0px, -${focusedLane.yPos}px)`;
-      blurredLane.onBlur();
-      focusedLane.onFocus();
-    }
-  }
-
-  onFocus() {
-    const lane = this.lanes[this.currentLaneIndex];
-    this.container.style.transform = `translate(0px, -${lane.yPos}px)`;
-    lane.onFocus();
-  }
 }
 
 export default Grid;

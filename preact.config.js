@@ -29,7 +29,7 @@ export default {
           cookiePathRewrite: false,
           pathRewrite: { '^/api': '' },
           secure: false,
-          target: 'https://dummyjson.com/',
+          target: 'http://localhost:3000/',
         },
       },
       compress: true,

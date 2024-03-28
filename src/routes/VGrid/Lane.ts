@@ -21,7 +21,7 @@ class Lane {
   constructor(laneItem: any, yPos = 0) {
     this.laneItem = laneItem;
     this.yPos = yPos;
-    this.config = getLaneConfig(this.laneItem.type);
+    this.config = getLaneConfig(this.laneItem.model);
     this.renderLane();
   }
 
@@ -30,7 +30,7 @@ class Lane {
     this.container.style.height = `${this.config.laneHeight}px`;
     this.container.style.transform = `translate(0px, ${this.yPos}px)`;
     hydrate(Carousel({ ...this.laneItem, laneRef: this.laneRef }), this.container);
-    this.fetchLaneItems();
+    // this.fetchLaneItems();
   };
 
   fetchLaneItems = async () => {
@@ -55,6 +55,11 @@ class Lane {
 
   nextItemPos() {
     return this.yPos + this.config.laneHeight + this.config.spaceBetweenLane;
+  }
+
+  prevItemPos(nextItem: any) {
+    const config = getLaneConfig(nextItem.model);
+    return this.yPos - config.laneHeight - config.spaceBetweenLane;
   }
 
   onFocus() {
