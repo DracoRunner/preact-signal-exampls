@@ -8,7 +8,7 @@ export default class Observable<T> implements Observe<T> {
   private observers: Set<(prev: T, next: T) => void> = new Set();
 
   constructor(value?: T) {
-    value && this.setValue(value);
+    this.setValue(value);
   }
 
   peek() {
@@ -16,6 +16,7 @@ export default class Observable<T> implements Observe<T> {
   }
 
   setValue(newValue: T) {
+    if (this.value === newValue) return;
     const prevValue = this.value;
     this.value = newValue;
     this.notifyObservers(prevValue, this.value);

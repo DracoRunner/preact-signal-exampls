@@ -10,7 +10,7 @@ export type Config = {
 };
 
 export const VGridConfig: { [key: string]: Config } = {
-  showMovieHybrid: {
+  movie: {
     laneHeight: getScaledPx(300, true),
     ItemHeight: getScaledPx(300, true),
     width: getScaledPx(200),

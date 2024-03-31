@@ -1,84 +1,74 @@
-import Pagination from './BaseClasses/Pagination';
+import PaginationManager from './BaseClasses/Pagination';
 import Lane from './Lane';
-import { getLaneConfig } from './utils';
 
-class Grid extends Pagination {
-  items: any[];
+class Grid extends PaginationManager {
   lanes: any[] = [];
   container: HTMLElement;
-  currentLaneIndex = 0;
-  lastLaneIndex = 0;
   topYPos = 0;
   bottomYPos = 0;
 
   constructor(gridRef: HTMLDivElement, fetchFn) {
     super(fetchFn);
     this.container = gridRef;
-    this.handleGridUpdate();
-    this.render();
+    this.initRenderCount.subscribe(this.renderLanes);
+    this.updateGrid();
+    this.handleScroll();
   }
 
-  render = () => {
-    this.initDataToRender.subscribe((prev, items) => {
-      if (items.length) {
-        items.forEach((item, index) => {
-          const lane = new Lane(item, this.bottomYPos);
-          this.container.appendChild(lane.container);
-          this.bottomYPos = lane.nextItemPos();
-          this.lanes.push(lane);
-        });
-      }
+  private renderLanes = (_: any, renderLanes: any) => {
+    const { start, end } = renderLanes;
+    if (start === 0 && end === 0) return;
+    const renderItems = this.data.slice(start, end);
+    this.lanes = renderItems.map((item) => {
+      const lane = new Lane(item, this.bottomYPos);
+      this.container.appendChild(lane.container);
+      this.bottomYPos = lane.nextItemPos();
+      return lane;
     });
   };
 
-  handleGridUpdate() {
-    this.laneStartIndex.subscribe((prev, next) => {
+  private updateGrid = () => {
+    this.renderStartIndex.subscribe((prev, next) => {
       if (prev > next) {
-        const item = this.dataBuffer[next];
-        const lane = new Lane(this.dataBuffer[next], this.topYPos);
+        //Add new lane in the start
+        const lane = new Lane(this.data[next], this.topYPos);
         this.container.insertBefore(lane.container, this.container.firstChild);
-        this.topYPos = lane.prevItemPos(item);
+        this.topYPos = lane.prevItemPos(this.data[next]);
         this.lanes.unshift(lane);
       }
-
-      if (next > prev) {
-        const topLaneToRemove = this.lanes[0];
+      if (prev < next) {
+        //remove lane from the start
+        const topLaneToRemove = this.lanes.shift();
         this.container.removeChild(topLaneToRemove.container);
         this.topYPos = topLaneToRemove.yPos;
-        console.log('topYPost===>', this.topYPos);
-        this.lanes.shift();
       }
     });
-    this.laneEndIndex.subscribe((prev, next) => {
-      if (prev > next) {
-        const laneToRemove = this.lanes[this.lanes.length - 1];
-        this.container.removeChild(laneToRemove.container);
-        this.bottomYPos = laneToRemove.yPos;
-        this.lanes.pop();
-      }
-
-      if (next > prev) {
-        const lane = new Lane(this.dataBuffer[next], this.bottomYPos);
+    this.renderEndIndex.subscribe(async (prev, next) => {
+      if (prev < next) {
+        //add new lane in the end
+        const lane = new Lane(this.data[next], this.bottomYPos);
         this.container.appendChild(lane.container);
         this.bottomYPos = lane.nextItemPos();
         this.lanes.push(lane);
       }
+      if (prev > next) {
+        const bottomLaneToRemove = this.lanes.pop();
+        this.container.removeChild(bottomLaneToRemove.container);
+        this.bottomYPos = bottomLaneToRemove.nextItemPos();
+      }
     });
-  }
+  };
+
+  private handleScroll = () => {
+    this.focusIndex.subscribe((_, focusIndex) => {
+      const start = this.renderStartIndex.peek();
+      const focusedLane = this.lanes[focusIndex - start];
+      this.container.style.transform = `translate(0px, -${focusedLane.yPos}px)`;
+    });
+  };
 
   handleKeyDown = (e: KeyboardEvent) => {
-    switch (e.key) {
-      case 'ArrowDown': {
-        this.next();
-        break;
-      }
-      case 'ArrowUp': {
-        this.prev();
-        break;
-      }
-      default:
-        break;
-    }
+    this.handleArrowKeys(e.key);
   };
 }
 

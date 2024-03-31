@@ -1,65 +1,64 @@
 import Observable from './Observable';
 
-export default class Carousel {
-  private readonly pageSize = 10;
-  private readonly bufferItems = 3;
-  public dataBuffer = [];
-  public scrollBoundary = 7;
-  public totalItems = 0;
+export default class PaginationManager {
+  private pageSize: number = 10;
+  private totalItems: number = 0;
+  private renderCount: number = 7;
   private fetchDataFn: Function;
-  public laneStartIndex = new Observable<number>();
-  public laneEndIndex = new Observable<number>();
-  public focusIndex = 0;
-  public initDataToRender = new Observable<any[]>([]);
+  private fetchedDataIndex: number = 0;
+  private preBufferCount: number = 2;
+
+  data: any[] = [];
+  initRenderCount = new Observable<{ start: number; end: number }>({ start: 0, end: 0 });
+  renderStartIndex = new Observable<number>(0);
+  renderEndIndex = new Observable<number>(0);
+  focusIndex = new Observable<number>(0);
 
   constructor(fetchDataFn: Function) {
     this.fetchDataFn = fetchDataFn;
-    this.fetchInitialPage();
-    this.checkAndLoadNextData();
+    this.initialize();
+    this.handlePagination();
   }
 
-  private fetchInitialPage = async () => {
-    const { data, total } = await this.fetchPage(0, this.pageSize * 2);
-    this.dataBuffer = data;
+  private fetchData = async (pageSize = this.pageSize) => {
+    return await this.fetchDataFn(this.data.length, pageSize);
+  };
+
+  private initialize = async () => {
+    const { data, total } = await this.fetchData();
+    this.data = data;
     this.totalItems = total;
-    this.laneStartIndex.setValue(0);
-    this.laneEndIndex.setValue(Math.min(this.pageSize, this.totalItems));
-    this.initDataToRender.setValue(this.dataBuffer.slice(this.laneStartIndex.peek(), this.laneEndIndex.peek()));
+    const endIndex = Math.min(this.renderCount, this.totalItems - 1);
+    this.fetchedDataIndex = data.length;
+    this.initRenderCount.setValue({ start: 0, end: endIndex });
   };
 
-  private fetchPage = async (start: number, pageSize = this.pageSize) => {
-    return await this.fetchDataFn(start, pageSize);
-  };
-
-  private checkAndLoadNextData = async () => {
-    this.laneEndIndex.subscribe(async (_, nextEndIndex) => {
-      if (nextEndIndex >= this.dataBuffer.length - this.scrollBoundary && this.dataBuffer.length < this.totalItems) {
-        const { data } = await this.fetchPage(this.dataBuffer.length);
-        this.dataBuffer.push(...data);
+  private handlePagination = () => {
+    this.focusIndex.subscribe((_, focusIndex) => {
+      const startIndex = Math.max(0, focusIndex - (this.preBufferCount + 1));
+      const endIndex = startIndex + this.renderCount;
+      if (endIndex < this.totalItems) {
+        this.renderStartIndex.setValue(startIndex);
+        this.renderEndIndex.setValue(endIndex);
+        if (endIndex >= this.fetchedDataIndex - this.preBufferCount && this.fetchedDataIndex < this.totalItems) {
+          this.fetchMoreData();
+        }
       }
     });
   };
 
-  next() {
-    if (this.focusIndex < this.totalItems) {
-      this.focusIndex++;
-      if (this.focusIndex < this.totalItems - this.scrollBoundary - this.bufferItems) {
-        const startIndex = Math.max(0, this.focusIndex - this.bufferItems);
-        this.laneStartIndex.setValue(startIndex);
-        this.laneEndIndex.setValue(startIndex + this.scrollBoundary + this.bufferItems);
-      }
-      this.checkAndLoadNextData();
-    }
-  }
+  fetchMoreData = async (): Promise<void> => {
+    const { data } = await this.fetchData();
+    this.data = [...this.data, ...data];
+    this.fetchedDataIndex = this.data.length;
+  };
 
-  prev() {
-    if (this.focusIndex > 0) {
-      this.focusIndex--;
-      if (this.focusIndex < this.totalItems - this.scrollBoundary) {
-        const startIndex = Math.max(0, this.focusIndex - this.bufferItems);
-        this.laneStartIndex.setValue(startIndex);
-        this.laneEndIndex.setValue(startIndex + this.scrollBoundary + this.bufferItems);
-      }
+  handleArrowKeys = (keyCode: string): void => {
+    const focusIndex = this.focusIndex.peek();
+    if (keyCode === 'ArrowUp' || keyCode === 'ArrowLeft') {
+      focusIndex > 0 && this.focusIndex.setValue(Math.max(0, focusIndex - 1));
+    } else if (keyCode === 'ArrowDown' || keyCode === 'ArrowRight') {
+      focusIndex < this.totalItems - 1 && this.focusIndex.setValue(Math.min(this.totalItems - 1, focusIndex + 1));
     }
-  }
+  };
 }
