@@ -13,15 +13,15 @@ class Item {
     this.itemData = itemData;
     this.config = getLaneConfig(type);
     this.setItemXPos(index);
-    this.createItem();
+    this.createItem(index);
   }
 
-  createItem = async () => {
+  createItem = async (index: number) => {
     this.container.classList.add('grid-col');
-    this.container.style.height = `${this.config.ItemHeight}px`;
-    this.container.style.width = `${this.config.width}px`;
+    this.container.style.height = `${this.config.itemHeight}px`;
+    this.container.style.width = `${this.config.itemWidth}px`;
     this.container.style.transform = `translate(${this.xPos}px,0px)`;
-    hydrate(MovieCard(this.itemData), this.container);
+    hydrate(MovieCard({ ...this.itemData, ...this.config, id: index }), this.container);
   };
 
   onFocus() {
@@ -33,7 +33,7 @@ class Item {
   }
 
   setItemXPos(index) {
-    this.xPos = index * this.config.width + index * 20;
+    this.xPos = index * this.config.itemWidth + index * 20;
   }
 }
 

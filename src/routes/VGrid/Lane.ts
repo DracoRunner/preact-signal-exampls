@@ -4,53 +4,75 @@ import { getLaneConfig } from './utils';
 import { getProductByCategory } from './services';
 import Item from './Item';
 import { Config } from './config';
+import PaginationManager from './BaseClasses/Pagination';
+import e from 'express';
 
-class Lane {
-  laneItem: any;
-  container = document.createElement('div');
-  laneRef = createRef<HTMLElement>();
-  laneData: any[] = [];
-  totalItems = 0;
-  config: Config;
+class Lane extends PaginationManager {
+  private laneData: any;
+  private config: Config;
+  private laneRef = createRef<HTMLElement>();
+  private items: Item[] = [];
   yPos = 0;
-  xPos = 0;
-  items: Item[] = [];
-  currentItemIndex = 0;
-  lastItemIndex = 0;
+  rightXPos = 0;
+  leftXPos = 0;
+  container = document.createElement('div');
+  focusedItem: Item;
 
-  constructor(laneItem: any, yPos = 0) {
-    this.laneItem = laneItem;
+  constructor(laneData: any, yPos = 0) {
+    super(getProductByCategory, 8, 1);
+    this.laneData = laneData;
     this.yPos = yPos;
-    this.config = getLaneConfig(this.laneItem.model);
+    this.config = getLaneConfig(this.laneData.model);
     this.renderLane();
+    this.handleScroll();
+    this.handleLaneUpdate();
+    this.initRenderCount.subscribe(this.renderItems);
   }
 
-  renderLane = async () => {
+  renderLane = () => {
     this.container.className = 'grid-row';
-    this.container.style.height = `${this.config.laneHeight}px`;
+    this.container.style.height = `${this.config.itemHeight}px`;
     this.container.style.transform = `translate(0px, ${this.yPos}px)`;
-    hydrate(Carousel({ ...this.laneItem, laneRef: this.laneRef }), this.container);
-    // this.fetchLaneItems();
+    hydrate(Carousel({ ...this.laneData, laneRef: this.laneRef }), this.container);
   };
 
-  fetchLaneItems = async () => {
-    getProductByCategory(this.laneItem.title).then((res: any) => {
-      this.laneData = res.products;
-      this.totalItems = res.total;
-      this.renderItems();
+  private renderItems = (_: any, renderLanes: any) => {
+    const { start, end } = renderLanes;
+    if (start === 0 && end === 0) return;
+    const renderItems = this.data.slice(start, end);
+    this.items = renderItems.map((item, index) => {
+      const itemNode = new Item(item, index, this.laneData.model);
+      this.laneRef.current.appendChild(itemNode.container);
+      return itemNode;
     });
   };
 
-  renderItems = async () => {
-    if (this.laneRef.current) {
-      this.laneData?.forEach((item: any, index: number) => {
-        const laneItem = new Item(item, index, this.laneItem.type);
-        this.laneRef.current.appendChild(laneItem.container);
-        this.items.push(laneItem);
-      });
-    } else {
-      throw new Error('Lane reference is not available');
-    }
+  handleLaneUpdate = () => {
+    this.renderStartIndex.subscribe((prev, next) => {
+      if (prev > next) {
+        //Add new item in the start
+        const item = new Item(this.data[next], next, this.laneData.model);
+        this.laneRef.current.insertBefore(item.container, this.laneRef.current.firstChild);
+        this.items.unshift(item);
+      }
+      if (prev < next) {
+        //remove lane from the start
+        const topLaneToRemove = this.items.shift();
+        this.laneRef.current.removeChild(topLaneToRemove.container);
+      }
+    });
+    this.renderEndIndex.subscribe(async (prev, next) => {
+      if (prev < next) {
+        //add new lane in the end
+        const item = new Item(this.data[next], next, this.laneData.model);
+        this.laneRef.current.appendChild(item.container);
+        this.items.push(item);
+      }
+      if (prev > next) {
+        const bottomLaneToRemove = this.items.pop();
+        this.laneRef.current.removeChild(bottomLaneToRemove.container);
+      }
+    });
   };
 
   nextItemPos() {
@@ -62,58 +84,20 @@ class Lane {
     return this.yPos - config.laneHeight - config.spaceBetweenLane;
   }
 
-  onFocus() {
-    const focusedItem = this.items[this.currentItemIndex];
-    focusedItem?.onFocus();
-  }
-
-  onBlur() {
-    const blurredItem = this.items[this.currentItemIndex];
-    blurredItem?.onBlur();
-  }
-
   handleKeyDown = (e: KeyboardEvent) => {
-    switch (e.key) {
-      case 'ArrowRight':
-        this.moveRight();
-        break;
-      case 'ArrowLeft':
-        this.moveLeft();
-        break;
-      default:
-        break;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      this.handleArrowKeys(e.key);
     }
   };
 
-  moveRight() {
-    const currentIndex = this.currentItemIndex;
-    const nextIndex = currentIndex + 1;
-    if (nextIndex < this.items.length) {
-      this.currentItemIndex = nextIndex;
-      this.lastItemIndex = currentIndex;
-      const focusedItem = this.items[nextIndex];
-      const blurredItem = this.items[currentIndex];
-      if (nextIndex < this.items.length - this.config.scrollBoundary)
-        this.laneRef.current.style.transform = `translate(-${focusedItem.xPos}px, 0px)`;
-      blurredItem.onBlur();
-      focusedItem.onFocus();
-    }
-  }
-
-  moveLeft() {
-    const currentIndex = this.currentItemIndex;
-    const nextIndex = currentIndex - 1;
-    if (nextIndex >= 0) {
-      this.currentItemIndex = nextIndex;
-      this.lastItemIndex = currentIndex;
-      const focusedItem = this.items[nextIndex];
-      const blurredItem = this.items[currentIndex];
-      if (nextIndex < this.items.length - this.config.scrollBoundary)
-        this.laneRef.current.style.transform = `translate(-${focusedItem.xPos}px, 0px)`;
-      blurredItem.onBlur();
-      focusedItem.onFocus();
-    }
-  }
+  handleScroll = () => {
+    this.focusIndex.subscribe((_, focusIndex) => {
+      const start = this.renderStartIndex.peek();
+      const focusedItem = this.items[focusIndex - start];
+      this.focusedItem = focusedItem;
+      this.laneRef.current.style.transform = `translate(-${focusedItem.xPos}px, 0px)`;
+    });
+  };
 }
 
 export default Lane;

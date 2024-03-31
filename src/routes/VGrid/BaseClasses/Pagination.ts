@@ -12,10 +12,12 @@ export default class PaginationManager {
   initRenderCount = new Observable<{ start: number; end: number }>({ start: 0, end: 0 });
   renderStartIndex = new Observable<number>(0);
   renderEndIndex = new Observable<number>(0);
-  focusIndex = new Observable<number>(0);
+  focusIndex = new Observable<number>(-1);
 
-  constructor(fetchDataFn: Function) {
+  constructor(fetchDataFn: Function, renderCount, preBufferCount) {
     this.fetchDataFn = fetchDataFn;
+    this.renderCount = renderCount;
+    this.preBufferCount = preBufferCount;
     this.initialize();
     this.handlePagination();
   }
@@ -25,12 +27,13 @@ export default class PaginationManager {
   };
 
   private initialize = async () => {
-    const { data, total } = await this.fetchData();
+    const { data, total } = await this.fetchData(this.renderCount * 2);
     this.data = data;
     this.totalItems = total;
     const endIndex = Math.min(this.renderCount, this.totalItems - 1);
     this.fetchedDataIndex = data.length;
     this.initRenderCount.setValue({ start: 0, end: endIndex });
+    this.focusIndex.setValue(0);
   };
 
   private handlePagination = () => {

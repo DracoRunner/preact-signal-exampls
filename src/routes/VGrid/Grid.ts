@@ -6,9 +6,10 @@ class Grid extends PaginationManager {
   container: HTMLElement;
   topYPos = 0;
   bottomYPos = 0;
+  private focusedLane: Lane;
 
   constructor(gridRef: HTMLDivElement, fetchFn) {
-    super(fetchFn);
+    super(fetchFn, 7, 2);
     this.container = gridRef;
     this.initRenderCount.subscribe(this.renderLanes);
     this.updateGrid();
@@ -63,12 +64,18 @@ class Grid extends PaginationManager {
     this.focusIndex.subscribe((_, focusIndex) => {
       const start = this.renderStartIndex.peek();
       const focusedLane = this.lanes[focusIndex - start];
+      this.focusedLane = focusedLane;
       this.container.style.transform = `translate(0px, -${focusedLane.yPos}px)`;
     });
   };
 
   handleKeyDown = (e: KeyboardEvent) => {
-    this.handleArrowKeys(e.key);
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      this.handleArrowKeys(e.key);
+    }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      this.focusedLane.handleArrowKeys(e.key);
+    }
   };
 }
 
