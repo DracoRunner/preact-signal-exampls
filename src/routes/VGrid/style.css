@@ -1,10 +1,17 @@
+.container {
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    display: flex;
+}
+
 .grid-container {
     height: 100%;
     width: 100%;
     position: relative;
-    background: gray;
     transition: 400ms ease 0ms;
     color: white;
+    margin: 18vh 6vw;
 }
 
 .grid-row {

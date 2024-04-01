@@ -18,7 +18,7 @@ export default class Carousel extends PaginationManager {
   focusedItem: Card;
 
   constructor(laneData: any, yPos = 0) {
-    super(getProductByCategory, 8, 1);
+    super(getProductByCategory, 11, 2);
     this.laneData = laneData;
     this.yPos = yPos;
     this.config = getLaneConfig(this.laneData.model);
@@ -30,7 +30,7 @@ export default class Carousel extends PaginationManager {
 
   renderLane = () => {
     this.container.className = 'grid-row';
-    this.container.style.height = `${this.config.itemHeight}px`;
+    this.container.style.height = `${this.config.laneHeight}px`;
     this.container.style.transform = `translate(0px, ${this.yPos}px)`;
     hydrate(CarouselComponent({ ...this.laneData, laneRef: this.laneRef }), this.container);
   };

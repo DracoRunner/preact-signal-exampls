@@ -183,7 +183,12 @@ const configuration = [
 
 export const getConfigurationByIndex = (start: number, size: number) => {
   const data = configuration
-    .map((item, index) => ({ ...item, title: `${item.title}-${index}`, model: index % 2 ? 'movie' : 'show' }))
+    .map((item, index) => ({
+      ...item,
+      carouselId: 'cus' + index,
+      title: `${item.title}-${index}`,
+      model: 'movie',
+    }))
     .slice(start, start + size);
 
   return {

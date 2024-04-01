@@ -1,15 +1,16 @@
+import CacheManager from './CacheManager';
 import Carousel from './Carousel';
 import PaginationManager from './PaginationManager';
 
 export default class VirtualizedGrid extends PaginationManager {
-  carouselList: any[] = [];
-  container: HTMLElement;
-  topYPos = 0;
-  bottomYPos = 0;
   private focusedLane: Carousel;
+  private carouselList: Carousel[] = [];
+  private container: HTMLElement;
+  private topYPos = 0;
+  private bottomYPos = 0;
 
-  constructor(gridRef: HTMLDivElement, fetchFn) {
-    super(fetchFn, 7, 2);
+  constructor(gridRef: HTMLDivElement, fetchFn: Function, cacheManager: CacheManager) {
+    super(fetchFn, 7, 2, cacheManager);
     this.container = gridRef;
     this.initRenderCount.subscribe(this.renderLanes);
     this.updateGrid();
@@ -31,31 +32,29 @@ export default class VirtualizedGrid extends PaginationManager {
   private updateGrid = () => {
     this.renderStartIndex.subscribe((prev, next) => {
       if (prev > next) {
-        //Add new lane in the start
-        const lane = new Carousel(this.data[next], this.topYPos);
+        const firstLane = this.carouselList[0];
+        const newLaneYPos = firstLane.prevItemPos(this.data[next]);
+        console.log('newLaneYPos', newLaneYPos);
+        const lane = new Carousel(this.data[next], newLaneYPos);
         this.container.insertBefore(lane.container, this.container.firstChild);
-        this.topYPos = lane.prevItemPos(this.data[next]);
         this.carouselList.unshift(lane);
       }
       if (prev < next) {
-        //remove lane from the start
         const topLaneToRemove = this.carouselList.shift();
         this.container.removeChild(topLaneToRemove.container);
-        this.topYPos = topLaneToRemove.yPos;
       }
     });
     this.renderEndIndex.subscribe(async (prev, next) => {
       if (prev < next) {
-        //add new lane in the end
-        const lane = new Carousel(this.data[next], this.bottomYPos);
+        const lastLane = this.carouselList[this.carouselList.length - 1];
+        const newLaneYPos = lastLane.nextItemPos();
+        const lane = new Carousel(this.data[next], newLaneYPos);
         this.container.appendChild(lane.container);
-        this.bottomYPos = lane.nextItemPos();
         this.carouselList.push(lane);
       }
       if (prev > next) {
         const bottomLaneToRemove = this.carouselList.pop();
         this.container.removeChild(bottomLaneToRemove.container);
-        this.bottomYPos = bottomLaneToRemove.nextItemPos();
       }
     });
   };

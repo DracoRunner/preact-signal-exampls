@@ -1,4 +1,5 @@
 import { Observable } from '../types';
+import CacheManager from './CacheManager';
 
 export default class PaginationManager {
   private pageSize: number = 10;
@@ -8,13 +9,15 @@ export default class PaginationManager {
   private fetchedDataIndex: number = 0;
   private preBufferCount: number = 2;
 
+  cacheManager: CacheManager;
   data: any[] = [];
   initRenderCount = new Observable<{ start: number; end: number }>({ start: 0, end: 0 });
   renderStartIndex = new Observable<number>(0);
   renderEndIndex = new Observable<number>(0);
   focusIndex = new Observable<number>(-1);
 
-  constructor(fetchDataFn: Function, renderCount, preBufferCount) {
+  constructor(fetchDataFn: Function, renderCount, preBufferCount, cacheManager?: CacheManager) {
+    this.cacheManager = cacheManager;
     this.fetchDataFn = fetchDataFn;
     this.renderCount = renderCount;
     this.preBufferCount = preBufferCount;

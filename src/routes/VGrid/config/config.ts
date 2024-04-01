@@ -3,12 +3,12 @@ import { Config } from '../types';
 
 export const VGridConfig: { [key: string]: Config } = {
   movie: {
-    laneHeight: getScaledPx(300, true),
-    itemHeight: getScaledPx(270, true),
-    itemWidth: getScaledPx(150),
+    laneHeight: getScaledPx(380, true),
+    itemHeight: getScaledPx(340, true),
+    itemWidth: getScaledPx(270),
     color: 'red',
     scrollBoundary: 9,
-    spaceBetweenLane: getScaledPx(10, true),
+    spaceBetweenLane: getScaledPx(40, true),
   },
   show: {
     laneHeight: getScaledPx(400, true),
