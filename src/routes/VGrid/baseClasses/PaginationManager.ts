@@ -9,6 +9,7 @@ export default class PaginationManager {
   private fetchedDataIndex: number = 0;
   private preBufferCount: number = 2;
 
+  cacheId: string = 'default';
   cacheManager: CacheManager;
   data: any[] = [];
   initRenderCount = new Observable<{ start: number; end: number }>({ start: 0, end: 0 });
@@ -16,8 +17,9 @@ export default class PaginationManager {
   renderEndIndex = new Observable<number>(0);
   focusIndex = new Observable<number>(-1);
 
-  constructor(fetchDataFn: Function, renderCount, preBufferCount, cacheManager?: CacheManager) {
+  constructor(fetchDataFn: Function, renderCount, preBufferCount, cacheManager?: CacheManager, cacheId?: string) {
     this.cacheManager = cacheManager;
+    this.cacheId = cacheId;
     this.fetchDataFn = fetchDataFn;
     this.renderCount = renderCount;
     this.preBufferCount = preBufferCount;
@@ -30,13 +32,19 @@ export default class PaginationManager {
   };
 
   private initialize = async () => {
-    const { data, total } = await this.fetchData(this.renderCount * 2);
-    this.data = data;
-    this.totalItems = total;
-    const endIndex = Math.min(this.renderCount, this.totalItems - 1);
-    this.fetchedDataIndex = data.length;
-    this.initRenderCount.setValue({ start: 0, end: endIndex });
-    this.focusIndex.setValue(0);
+    this.verifyCache()
+      .then(() => {
+        console.log(this);
+      })
+      .catch(async () => {
+        const { data, total } = await this.fetchData(this.renderCount * 2);
+        this.data = data;
+        this.totalItems = total;
+        const endIndex = Math.min(this.renderCount, this.totalItems - 1);
+        this.fetchedDataIndex = data.length;
+        this.initRenderCount.setValue({ start: 0, end: endIndex });
+        this.focusIndex.setValue(0);
+      });
   };
 
   private handlePagination = () => {
@@ -50,6 +58,7 @@ export default class PaginationManager {
           this.fetchMoreData();
         }
       }
+      this.saveCache();
     });
   };
 
@@ -66,5 +75,30 @@ export default class PaginationManager {
     } else if (keyCode === 'ArrowDown' || keyCode === 'ArrowRight') {
       focusIndex < this.totalItems - 1 && this.focusIndex.setValue(Math.min(this.totalItems - 1, focusIndex + 1));
     }
+  };
+
+  saveCache = () => {
+    this.cacheManager?.set(this.cacheId, {
+      data: this.data,
+      totalItems: this.totalItems,
+      start: this.renderStartIndex.peek(),
+      end: this.renderEndIndex.peek(),
+      focusIndex: this.focusIndex.peek(),
+    });
+  };
+
+  verifyCache = async () => {
+    const cache: any = await this.cacheManager?.get(this.cacheId);
+    if (cache) {
+      const { data, totalItems, start, end, focusIndex } = cache;
+      this.data = data;
+      this.totalItems = totalItems;
+      this.renderStartIndex.silentUpdate(start);
+      this.renderEndIndex.silentUpdate(end);
+      this.initRenderCount.setValue({ start, end });
+      this.focusIndex.setValue(focusIndex);
+      return Promise.resolve();
+    }
+    return Promise.reject(new Error('No cache found'));
   };
 }

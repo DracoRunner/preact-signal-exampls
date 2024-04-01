@@ -10,7 +10,7 @@ export default class VirtualizedGrid extends PaginationManager {
   private bottomYPos = 0;
 
   constructor(gridRef: HTMLDivElement, fetchFn: Function, cacheManager: CacheManager) {
-    super(fetchFn, 7, 2, cacheManager);
+    super(fetchFn, 7, 2, cacheManager, 'home_grid');
     this.container = gridRef;
     this.initRenderCount.subscribe(this.renderLanes);
     this.updateGrid();
@@ -34,7 +34,6 @@ export default class VirtualizedGrid extends PaginationManager {
       if (prev > next) {
         const firstLane = this.carouselList[0];
         const newLaneYPos = firstLane.prevItemPos(this.data[next]);
-        console.log('newLaneYPos', newLaneYPos);
         const lane = new Carousel(this.data[next], newLaneYPos);
         this.container.insertBefore(lane.container, this.container.firstChild);
         this.carouselList.unshift(lane);

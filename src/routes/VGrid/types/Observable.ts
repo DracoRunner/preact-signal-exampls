@@ -11,6 +11,10 @@ export default class Observable<T> implements Observe<T> {
     this.setValue(value);
   }
 
+  silentUpdate(newValue: T) {
+    this.value = newValue;
+  }
+
   peek() {
     return this.value;
   }

@@ -3,7 +3,7 @@ import { Config } from '../types';
 
 export const VGridConfig: { [key: string]: Config } = {
   movie: {
-    laneHeight: getScaledPx(380, true),
+    laneHeight: getScaledPx(400, true),
     itemHeight: getScaledPx(340, true),
     itemWidth: getScaledPx(270),
     color: 'red',
