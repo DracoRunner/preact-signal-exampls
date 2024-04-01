@@ -1,13 +1,5 @@
 import { getScaledPx } from '@utils/index';
-
-export type Config = {
-  laneHeight: number;
-  itemHeight: number;
-  color: string;
-  itemWidth: number;
-  scrollBoundary: number;
-  spaceBetweenLane: number;
-};
+import { Config } from '../types';
 
 export const VGridConfig: { [key: string]: Config } = {
   movie: {

@@ -1,22 +1,21 @@
 import { createRef, hydrate } from 'preact';
-import Carousel from './components/Carousel';
-import { getLaneConfig } from './utils';
-import { getProductByCategory } from './services';
-import Item from './Item';
-import { Config } from './config';
-import PaginationManager from './BaseClasses/Pagination';
-import e from 'express';
+import { Carousel as CarouselComponent } from '../components';
+import { getProductByCategory } from '../services';
+import { Config } from '../types';
+import { getLaneConfig } from '../utils';
+import Card from './Card';
+import PaginationManager from './PaginationManager';
 
-class Lane extends PaginationManager {
+export default class Carousel extends PaginationManager {
   private laneData: any;
   private config: Config;
   private laneRef = createRef<HTMLElement>();
-  private items: Item[] = [];
+  private cardList: Card[] = [];
   yPos = 0;
   rightXPos = 0;
   leftXPos = 0;
   container = document.createElement('div');
-  focusedItem: Item;
+  focusedItem: Card;
 
   constructor(laneData: any, yPos = 0) {
     super(getProductByCategory, 8, 1);
@@ -33,15 +32,15 @@ class Lane extends PaginationManager {
     this.container.className = 'grid-row';
     this.container.style.height = `${this.config.itemHeight}px`;
     this.container.style.transform = `translate(0px, ${this.yPos}px)`;
-    hydrate(Carousel({ ...this.laneData, laneRef: this.laneRef }), this.container);
+    hydrate(CarouselComponent({ ...this.laneData, laneRef: this.laneRef }), this.container);
   };
 
   private renderItems = (_: any, renderLanes: any) => {
     const { start, end } = renderLanes;
     if (start === 0 && end === 0) return;
     const renderItems = this.data.slice(start, end);
-    this.items = renderItems.map((item, index) => {
-      const itemNode = new Item(item, index, this.laneData.model);
+    this.cardList = renderItems.map((item, index) => {
+      const itemNode = new Card(item, index, this.laneData.model);
       this.laneRef.current.appendChild(itemNode.container);
       return itemNode;
     });
@@ -51,25 +50,25 @@ class Lane extends PaginationManager {
     this.renderStartIndex.subscribe((prev, next) => {
       if (prev > next) {
         //Add new item in the start
-        const item = new Item(this.data[next], next, this.laneData.model);
+        const item = new Card(this.data[next], next, this.laneData.model);
         this.laneRef.current.insertBefore(item.container, this.laneRef.current.firstChild);
-        this.items.unshift(item);
+        this.cardList.unshift(item);
       }
       if (prev < next) {
         //remove lane from the start
-        const topLaneToRemove = this.items.shift();
+        const topLaneToRemove = this.cardList.shift();
         this.laneRef.current.removeChild(topLaneToRemove.container);
       }
     });
     this.renderEndIndex.subscribe(async (prev, next) => {
       if (prev < next) {
         //add new lane in the end
-        const item = new Item(this.data[next], next, this.laneData.model);
+        const item = new Card(this.data[next], next, this.laneData.model);
         this.laneRef.current.appendChild(item.container);
-        this.items.push(item);
+        this.cardList.push(item);
       }
       if (prev > next) {
-        const bottomLaneToRemove = this.items.pop();
+        const bottomLaneToRemove = this.cardList.pop();
         this.laneRef.current.removeChild(bottomLaneToRemove.container);
       }
     });
@@ -93,11 +92,9 @@ class Lane extends PaginationManager {
   handleScroll = () => {
     this.focusIndex.subscribe((_, focusIndex) => {
       const start = this.renderStartIndex.peek();
-      const focusedItem = this.items[focusIndex - start];
+      const focusedItem = this.cardList[focusIndex - start];
       this.focusedItem = focusedItem;
       this.laneRef.current.style.transform = `translate(-${focusedItem.xPos}px, 0px)`;
     });
   };
 }
-
-export default Lane;

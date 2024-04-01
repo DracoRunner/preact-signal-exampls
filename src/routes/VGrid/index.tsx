@@ -1,14 +1,14 @@
 import { useLayoutEffect, useRef } from 'preact/hooks';
-import Grid from './Grid';
 import './style.css';
 import { getCarousels } from './services';
+import VirtualizedGrid from './baseClasses/VirtualizedGrid';
 
 export default () => {
   const gridRef = useRef(null);
 
   useLayoutEffect(() => {
     if (gridRef.current) {
-      const vGrid = new Grid(gridRef.current, getCarousels);
+      const vGrid = new VirtualizedGrid(gridRef.current, getCarousels);
       window.addEventListener('keydown', vGrid.handleKeyDown);
 
       return () => {

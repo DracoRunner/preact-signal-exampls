@@ -1,4 +1,4 @@
-import Observable from './Observable';
+import { Observable } from '../types';
 
 export default class PaginationManager {
   private pageSize: number = 10;

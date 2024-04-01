@@ -1,12 +1,12 @@
-import PaginationManager from './BaseClasses/Pagination';
-import Lane from './Lane';
+import Carousel from './Carousel';
+import PaginationManager from './PaginationManager';
 
-class Grid extends PaginationManager {
-  lanes: any[] = [];
+export default class VirtualizedGrid extends PaginationManager {
+  carouselList: any[] = [];
   container: HTMLElement;
   topYPos = 0;
   bottomYPos = 0;
-  private focusedLane: Lane;
+  private focusedLane: Carousel;
 
   constructor(gridRef: HTMLDivElement, fetchFn) {
     super(fetchFn, 7, 2);
@@ -20,8 +20,8 @@ class Grid extends PaginationManager {
     const { start, end } = renderLanes;
     if (start === 0 && end === 0) return;
     const renderItems = this.data.slice(start, end);
-    this.lanes = renderItems.map((item) => {
-      const lane = new Lane(item, this.bottomYPos);
+    this.carouselList = renderItems.map((item) => {
+      const lane = new Carousel(item, this.bottomYPos);
       this.container.appendChild(lane.container);
       this.bottomYPos = lane.nextItemPos();
       return lane;
@@ -32,14 +32,14 @@ class Grid extends PaginationManager {
     this.renderStartIndex.subscribe((prev, next) => {
       if (prev > next) {
         //Add new lane in the start
-        const lane = new Lane(this.data[next], this.topYPos);
+        const lane = new Carousel(this.data[next], this.topYPos);
         this.container.insertBefore(lane.container, this.container.firstChild);
         this.topYPos = lane.prevItemPos(this.data[next]);
-        this.lanes.unshift(lane);
+        this.carouselList.unshift(lane);
       }
       if (prev < next) {
         //remove lane from the start
-        const topLaneToRemove = this.lanes.shift();
+        const topLaneToRemove = this.carouselList.shift();
         this.container.removeChild(topLaneToRemove.container);
         this.topYPos = topLaneToRemove.yPos;
       }
@@ -47,13 +47,13 @@ class Grid extends PaginationManager {
     this.renderEndIndex.subscribe(async (prev, next) => {
       if (prev < next) {
         //add new lane in the end
-        const lane = new Lane(this.data[next], this.bottomYPos);
+        const lane = new Carousel(this.data[next], this.bottomYPos);
         this.container.appendChild(lane.container);
         this.bottomYPos = lane.nextItemPos();
-        this.lanes.push(lane);
+        this.carouselList.push(lane);
       }
       if (prev > next) {
-        const bottomLaneToRemove = this.lanes.pop();
+        const bottomLaneToRemove = this.carouselList.pop();
         this.container.removeChild(bottomLaneToRemove.container);
         this.bottomYPos = bottomLaneToRemove.nextItemPos();
       }
@@ -63,7 +63,7 @@ class Grid extends PaginationManager {
   private handleScroll = () => {
     this.focusIndex.subscribe((_, focusIndex) => {
       const start = this.renderStartIndex.peek();
-      const focusedLane = this.lanes[focusIndex - start];
+      const focusedLane = this.carouselList[focusIndex - start];
       this.focusedLane = focusedLane;
       this.container.style.transform = `translate(0px, -${focusedLane.yPos}px)`;
     });
@@ -78,5 +78,3 @@ class Grid extends PaginationManager {
     }
   };
 }
-
-export default Grid;

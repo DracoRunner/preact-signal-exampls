@@ -1,9 +1,9 @@
 import { hydrate } from 'preact';
-import { Config } from './config';
-import { getLaneConfig } from './utils';
-import MovieCard from './components/MovieCard';
+import { getLaneConfig } from '../utils';
+import { Config } from '../types';
+import { MovieCard } from '../components';
 
-class Item {
+export default class Card {
   itemData: any;
   container = document.createElement('span');
   xPos: number;
@@ -36,5 +36,3 @@ class Item {
     this.xPos = index * this.config.itemWidth + index * 20;
   }
 }
-
-export default Item;
