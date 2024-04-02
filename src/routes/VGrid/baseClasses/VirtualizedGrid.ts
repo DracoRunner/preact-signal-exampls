@@ -6,27 +6,36 @@ export default class VirtualizedGrid extends PaginationManager {
   private focusedLane: Carousel;
   private carouselList: Carousel[] = [];
   private container: HTMLElement;
-  private topYPos = 0;
-  private bottomYPos = 0;
+  private initYPos = 0;
 
   constructor(gridRef: HTMLDivElement, fetchFn: Function, cacheManager: CacheManager) {
     super(fetchFn, 7, 2, cacheManager, 'home_grid');
     this.container = gridRef;
+
     this.initRenderCount.subscribe(this.renderLanes);
-    this.updateGrid();
     this.handleScroll();
   }
 
   private renderLanes = (_: any, renderLanes: any) => {
-    const { start, end } = renderLanes;
-    if (start === 0 && end === 0) return;
-    const renderItems = this.data.slice(start, end);
-    this.carouselList = renderItems.map((item) => {
-      const lane = new Carousel(item, this.bottomYPos);
-      this.container.appendChild(lane.container);
-      this.bottomYPos = lane.nextItemPos();
-      return lane;
-    });
+    this.verifyGridCache()
+      .catch(() => {})
+      .finally(() => {
+        console.log(this.initYPos, renderLanes);
+        const { start, end } = renderLanes;
+        if (start === 0 && end === 0) return;
+        const renderItems = this.data.slice(start, end);
+        this.carouselList = renderItems.map((item) => {
+          const lane = new Carousel(item, this.initYPos);
+          this.container.appendChild(lane.container);
+          this.initYPos = lane.nextItemPos();
+          return lane;
+        });
+        const focusIndex = this.focusIndex.peek();
+        const focusedLane = this.carouselList[focusIndex - start];
+        this.container.style.transform = `translate(0px, -${focusedLane.yPos}px)`;
+        this.updateGrid();
+        this.saveGridCache();
+      });
   };
 
   private updateGrid = () => {
@@ -62,8 +71,10 @@ export default class VirtualizedGrid extends PaginationManager {
     this.focusIndex.subscribe((_, focusIndex) => {
       const start = this.renderStartIndex.peek();
       const focusedLane = this.carouselList[focusIndex - start];
+      if (!focusedLane) return;
       this.focusedLane = focusedLane;
       this.container.style.transform = `translate(0px, -${focusedLane.yPos}px)`;
+      this.saveGridCache();
     });
   };
 
@@ -74,5 +85,23 @@ export default class VirtualizedGrid extends PaginationManager {
     if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
       this.focusedLane.handleArrowKeys(e.key);
     }
+  };
+
+  saveGridCache = () => {
+    if (this.carouselList.length) {
+      this.cacheManager?.set(this.cacheId, {
+        initYPos: this.carouselList[0].yPos,
+      });
+    }
+  };
+
+  verifyGridCache = async () => {
+    const cache: any = await this.cacheManager?.get(this.cacheId);
+    if (cache) {
+      const { initYPos } = cache;
+      this.initYPos = initYPos;
+      return Promise.resolve();
+    }
+    return Promise.reject();
   };
 }

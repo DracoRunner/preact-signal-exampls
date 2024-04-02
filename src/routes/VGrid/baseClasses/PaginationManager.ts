@@ -32,7 +32,7 @@ export default class PaginationManager {
   };
 
   private initialize = async () => {
-    this.verifyCache()
+    this.verifyPageCache()
       .then(() => {
         console.log(this);
       })
@@ -58,7 +58,7 @@ export default class PaginationManager {
           this.fetchMoreData();
         }
       }
-      this.saveCache();
+      this.savePageCache();
     });
   };
 
@@ -77,8 +77,8 @@ export default class PaginationManager {
     }
   };
 
-  saveCache = () => {
-    this.cacheManager?.set(this.cacheId, {
+  savePageCache = () => {
+    this.cacheManager?.set(`${this.cacheId}_page`, {
       data: this.data,
       totalItems: this.totalItems,
       start: this.renderStartIndex.peek(),
@@ -87,8 +87,8 @@ export default class PaginationManager {
     });
   };
 
-  verifyCache = async () => {
-    const cache: any = await this.cacheManager?.get(this.cacheId);
+  verifyPageCache = async () => {
+    const cache: any = await this.cacheManager?.get(`${this.cacheId}_page`);
     if (cache) {
       const { data, totalItems, start, end, focusIndex } = cache;
       this.data = data;
@@ -96,7 +96,7 @@ export default class PaginationManager {
       this.renderStartIndex.silentUpdate(start);
       this.renderEndIndex.silentUpdate(end);
       this.initRenderCount.setValue({ start, end });
-      this.focusIndex.setValue(focusIndex);
+      this.focusIndex.silentUpdate(focusIndex);
       return Promise.resolve();
     }
     return Promise.reject(new Error('No cache found'));
