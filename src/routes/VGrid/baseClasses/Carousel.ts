@@ -18,7 +18,7 @@ export default class Carousel extends PaginationManager {
   focusedItem: Card;
 
   constructor(laneData: any, yPos = 0) {
-    super(getProductByCategory, 11, 2);
+    super(getProductByCategory, 9, 2);
     this.laneData = laneData;
     this.yPos = yPos;
     this.config = getLaneConfig(this.laneData.model);

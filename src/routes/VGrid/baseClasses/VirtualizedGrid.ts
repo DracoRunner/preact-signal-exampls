@@ -9,7 +9,7 @@ export default class VirtualizedGrid extends PaginationManager {
   private initYPos = 0;
 
   constructor(gridRef: HTMLDivElement, fetchFn: Function, cacheManager: CacheManager) {
-    super(fetchFn, 7, 2, cacheManager, 'home_grid');
+    super(fetchFn, 5, 1, cacheManager, 'home_grid');
     this.container = gridRef;
 
     this.initRenderCount.subscribe(this.renderLanes);
