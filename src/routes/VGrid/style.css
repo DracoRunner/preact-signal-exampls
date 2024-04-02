@@ -9,18 +9,18 @@
     height: 100%;
     width: 100%;
     position: relative;
-    /* transition: 400ms ease 0ms; */
+    transition: 400ms ease 0ms;
     color: white;
     margin: 18vh 6vw;
 }
 
 .grid-row {
     position: absolute;
-    /* transition: 400ms ease 0ms; */
+    transition: 400ms ease 0ms;
     width: 100%;
 }
 
 .grid-col {
     position: absolute;
-    /* transition: 400ms ease 0ms; */
+    transition: 400ms ease 0ms;
 }
