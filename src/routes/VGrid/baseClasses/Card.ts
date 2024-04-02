@@ -9,10 +9,10 @@ export default class Card {
   xPos: number;
   config: Config;
 
-  constructor(itemData: any, index: number, type: string) {
+  constructor(itemData: any, xPos: number, type: string, index: number) {
     this.itemData = itemData;
     this.config = getLaneConfig(type);
-    this.setItemXPos(index);
+    this.xPos = xPos;
     this.createItem(index);
   }
 
@@ -32,7 +32,10 @@ export default class Card {
     this.container.style.border = `none`;
   }
 
-  setItemXPos(index) {
-    this.xPos = index * this.config.itemWidth + index * 20;
+  nextItemPos() {
+    return this.xPos + this.config.itemWidth + 20;
+  }
+  prevItemPos() {
+    return this.xPos - this.config.itemWidth - 20;
   }
 }

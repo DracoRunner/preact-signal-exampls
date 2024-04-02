@@ -12,11 +12,8 @@ export default ({ title, itemHeight, itemWidth, id, ...props }: Props) => {
   const thumbnail = `https://picsum.photos/${itemWidth}/${itemHeight}?random=${id}`;
 
   return (
-    <div className="movie-card">
-      <img src={thumbnail} alt="movie-thumbnail" />
-      <div className="overlay">
-        <div className="title">{title}</div>
-      </div>
+    <div className="movie-card" height={itemHeight} width={itemWidth}>
+      <img src={thumbnail} alt="movie-thumbnail" defer height={itemHeight} width={itemWidth} />
     </div>
   );
 };

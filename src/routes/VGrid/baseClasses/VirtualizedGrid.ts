@@ -16,22 +16,32 @@ export default class VirtualizedGrid extends PaginationManager {
     this.handleScroll();
   }
 
+  createCarousel = (item: any, yPos?: number) => {
+    let lane = null;
+    if (yPos) {
+      lane = new Carousel(item, yPos, this.cacheManager);
+    } else {
+      lane = new Carousel(item, this.initYPos, this.cacheManager);
+      this.initYPos = lane.nextItemPos();
+    }
+    return lane;
+  };
+
   private renderLanes = (_: any, renderLanes: any) => {
     this.verifyGridCache()
       .catch(() => {})
       .finally(() => {
-        console.log(this.initYPos, renderLanes);
         const { start, end } = renderLanes;
         if (start === 0 && end === 0) return;
         const renderItems = this.data.slice(start, end);
         this.carouselList = renderItems.map((item) => {
-          const lane = new Carousel(item, this.initYPos);
+          const lane = this.createCarousel(item);
           this.container.appendChild(lane.container);
-          this.initYPos = lane.nextItemPos();
           return lane;
         });
         const focusIndex = this.focusIndex.peek();
         const focusedLane = this.carouselList[focusIndex - start];
+        this.focusedLane = focusedLane;
         this.container.style.transform = `translate(0px, -${focusedLane.yPos}px)`;
         this.updateGrid();
         this.saveGridCache();
@@ -41,9 +51,10 @@ export default class VirtualizedGrid extends PaginationManager {
   private updateGrid = () => {
     this.renderStartIndex.subscribe((prev, next) => {
       if (prev > next) {
+        const newLane = this.data[next];
         const firstLane = this.carouselList[0];
-        const newLaneYPos = firstLane.prevItemPos(this.data[next]);
-        const lane = new Carousel(this.data[next], newLaneYPos);
+        const newLaneYPos = firstLane.prevItemPos(newLane);
+        const lane = this.createCarousel(newLane, newLaneYPos);
         this.container.insertBefore(lane.container, this.container.firstChild);
         this.carouselList.unshift(lane);
       }
@@ -56,7 +67,7 @@ export default class VirtualizedGrid extends PaginationManager {
       if (prev < next) {
         const lastLane = this.carouselList[this.carouselList.length - 1];
         const newLaneYPos = lastLane.nextItemPos();
-        const lane = new Carousel(this.data[next], newLaneYPos);
+        const lane = this.createCarousel(this.data[next], newLaneYPos);
         this.container.appendChild(lane.container);
         this.carouselList.push(lane);
       }

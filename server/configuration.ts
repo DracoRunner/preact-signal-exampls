@@ -187,7 +187,7 @@ export const getConfigurationByIndex = (start: number, size: number) => {
       ...item,
       carouselId: 'cus' + index,
       title: `${item.title}-${index}`,
-      model: 'movie',
+      model: index % 2 ? 'movie' : 'show',
     }))
     .slice(start, start + size);
 

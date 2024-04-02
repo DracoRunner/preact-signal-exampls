@@ -196,7 +196,7 @@ var configuration = [
 ];
 var getConfigurationByIndex = function (start, size) {
     var data = configuration
-        .map(function (item, index) { return (__assign(__assign({}, item), { carouselId: 'cus' + index, title: "".concat(item.title, "-").concat(index), model: 'movie' })); })
+        .map(function (item, index) { return (__assign(__assign({}, item), { carouselId: 'cus' + index, title: "".concat(item.title, "-").concat(index), model: index % 2 ? 'movie' : 'show' })); })
         .slice(start, start + size);
     return {
         data: data,
