@@ -1,4 +1,3 @@
-import CacheManager from './CacheManager';
 import Carousel from './Carousel';
 import PaginationManager from './PaginationManager';
 
@@ -8,8 +7,8 @@ export default class VirtualizedGrid extends PaginationManager {
   private container: HTMLElement;
   private initYPos = 0;
 
-  constructor(gridRef: HTMLDivElement, fetchFn: Function, cacheManager: CacheManager) {
-    super(fetchFn, 5, 1, cacheManager, 'home_grid');
+  constructor(gridRef: HTMLDivElement, fetchFn: Function) {
+    super(fetchFn, 5, 1, 'home_grid');
     this.container = gridRef;
 
     this.initRenderCount.subscribe(this.renderLanes);
@@ -19,9 +18,9 @@ export default class VirtualizedGrid extends PaginationManager {
   createCarousel = (item: any, yPos?: number) => {
     let lane = null;
     if (yPos) {
-      lane = new Carousel(item, yPos, this.cacheManager);
+      lane = new Carousel(item, yPos);
     } else {
-      lane = new Carousel(item, this.initYPos, this.cacheManager);
+      lane = new Carousel(item, this.initYPos);
       this.initYPos = lane.nextItemPos();
     }
     return lane;
@@ -100,14 +99,14 @@ export default class VirtualizedGrid extends PaginationManager {
 
   saveGridCache = () => {
     if (this.carouselList.length) {
-      this.cacheManager?.set(this.cacheId, {
+      this.set(this.cacheId, {
         initYPos: this.carouselList[0].yPos,
       });
     }
   };
 
   verifyGridCache = async () => {
-    const cache: any = await this.cacheManager?.get(this.cacheId);
+    const cache: any = await this.get(this.cacheId);
     if (cache) {
       const { initYPos } = cache;
       this.initYPos = initYPos;

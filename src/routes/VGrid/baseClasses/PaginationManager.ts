@@ -1,7 +1,7 @@
 import { Observable } from '../types';
 import CacheManager from './CacheManager';
 
-export default class PaginationManager {
+export default class PaginationManager extends CacheManager {
   private pageSize: number = 10;
   private totalItems: number = 0;
   private renderCount: number = 7;
@@ -10,15 +10,14 @@ export default class PaginationManager {
   private preBufferCount: number = 2;
 
   cacheId: string = 'default';
-  cacheManager: CacheManager;
   data: any[] = [];
   initRenderCount = new Observable<{ start: number; end: number }>({ start: 0, end: 0 });
   renderStartIndex = new Observable<number>(0);
   renderEndIndex = new Observable<number>(0);
   focusIndex = new Observable<number>(-1);
 
-  constructor(fetchDataFn: Function, renderCount, preBufferCount, cacheManager?: CacheManager, cacheId?: string) {
-    this.cacheManager = cacheManager;
+  constructor(fetchDataFn: Function, renderCount, preBufferCount, cacheId?: string) {
+    super();
     this.cacheId = cacheId;
     this.fetchDataFn = fetchDataFn;
     this.renderCount = renderCount;
@@ -78,7 +77,7 @@ export default class PaginationManager {
   };
 
   savePageCache = () => {
-    this.cacheManager?.set(`${this.cacheId}_page`, {
+    this.set(`${this.cacheId}_page`, {
       data: this.data,
       totalItems: this.totalItems,
       start: this.renderStartIndex.peek(),
@@ -88,7 +87,7 @@ export default class PaginationManager {
   };
 
   verifyPageCache = async () => {
-    const cache: any = await this.cacheManager?.get(`${this.cacheId}_page`);
+    const cache: any = await this.get(`${this.cacheId}_page`);
     if (cache) {
       const { data, totalItems, start, end, focusIndex } = cache;
       this.data = data;

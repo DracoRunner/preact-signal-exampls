@@ -1,9 +1,8 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
-import './style.css';
-import { getCarousels } from './services';
-import VirtualizedGrid from './baseClasses/VirtualizedGrid';
-import CacheManager from './baseClasses/CacheManager';
 import DBUtils from './baseClasses/DBUtils';
+import VirtualizedGrid from './baseClasses/VirtualizedGrid';
+import { getCarousels } from './services';
+import './style.css';
 
 export default () => {
   const gridRef = useRef(null);
@@ -11,8 +10,7 @@ export default () => {
 
   const createGrid = async () => {
     await DBUtils.initialize();
-    const cacheManager = new CacheManager();
-    const vGrid = new VirtualizedGrid(gridRef.current, getCarousels, cacheManager);
+    const vGrid = new VirtualizedGrid(gridRef.current, getCarousels);
     setVGrid(vGrid);
   };
 

@@ -5,7 +5,6 @@ import { Config } from '../types';
 import { getLaneConfig } from '../utils';
 import Card from './Card';
 import PaginationManager from './PaginationManager';
-import CacheManager from './CacheManager';
 
 export default class Carousel extends PaginationManager {
   private laneData: any;
@@ -17,8 +16,8 @@ export default class Carousel extends PaginationManager {
   container = document.createElement('div');
   focusedCard: Card;
 
-  constructor(laneData: any, yPos = 0, cacheManager?: CacheManager, cacheId?: string) {
-    super(getProductByCategory, 9, 2, cacheManager, laneData.carouselId);
+  constructor(laneData: any, yPos = 0) {
+    super(getProductByCategory, 9, 2, laneData.carouselId);
     this.laneData = laneData;
     this.yPos = yPos;
     this.config = getLaneConfig(this.laneData.model);
@@ -121,14 +120,14 @@ export default class Carousel extends PaginationManager {
 
   saveCache = () => {
     if (this.cardList.length) {
-      this.cacheManager?.set(this.cacheId, {
+      this.set(this.cacheId, {
         initXPos: this.cardList[0].xPos,
       });
     }
   };
 
   verifyCache = async () => {
-    const cache: any = await this.cacheManager?.get(this.cacheId);
+    const cache: any = await this.get(this.cacheId);
     if (cache) {
       const { initXPos } = cache;
       this.initXPos = initXPos ?? 0;
